@@ -91,7 +91,7 @@ def get_gemini_response(user_id: str, user_message: str) -> str:
         conversation_history[user_id] = conversation_history[user_id][-20:]
 
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         system_instruction=SEBASCHAN_SYSTEM_PROMPT,
     )
     chat = model.start_chat(history=conversation_history[user_id][:-1])
