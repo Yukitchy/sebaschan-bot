@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ episode.title }} | {{ episode.show_name }}</title>
+    <link rel="canonical" href="{{ canonical_url }}">
+    <style>
+        body { font-family: sans-serif; max-width: 720px; margin: 0 auto; padding: 1.5rem; line-height: 1.8; }
+        header { border-bottom: 1px solid #ddd; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+        .show-name { color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <p class="show-name">{{ episode.show_name }} / ep{{ ep_number }}</p>
+        <h1>{{ episode.title }}</h1>
+    </header>
+    <main>
+        {{ episode.summary_html | safe }}
+    </main>
+</body>
+</html>

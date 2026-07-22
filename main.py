@@ -15,7 +15,12 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 import google.generativeai as genai
 
+from bunko import bunko
+
 app = Flask(__name__)
+
+# ポッドキャストまとめページ「bunko」(bunko.yuukipodcast.com 向け)
+app.register_blueprint(bunko)
 
 LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET", "")
 LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "")
