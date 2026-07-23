@@ -1,0 +1,7 @@
+# 認証情報・出力は載せない
+storageState.json
+.env
+node_modules/
+debug/
+out/
+collector.log

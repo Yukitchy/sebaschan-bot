@@ -3,6 +3,18 @@
 公開Artifact: https://claude.ai/code/artifact/0580f527-f782-476a-b3e9-76e1f53bf5ce
 ダッシュボード本体: `dashboard/index.html`（Artifactのソース。編集したら同URLへ再公開）
 
+## アーキテクチャ：収集(Mac)と分析(どこでも)を分離
+ログイン/画面操作が要るデータは Mac の収集ロボが取得し、共有スプレッドシートへ書く。
+スマホ/web/朝イチルーチンは「そのシートを読むだけ」＝どこから指示しても「入れない」問題が起きない。
+
+- **共有スプレッドシート**「対策室KPI｜番組データ」
+  id: `1m-lt_n6bkNXW5gdASxJyLTSf0KeEVkq7prO_GFYQH9A`
+  https://docs.google.com/spreadsheets/d/1m-lt_n6bkNXW5gdASxJyLTSf0KeEVkq7prO_GFYQH9A/edit
+- **Mac収集ロボ**: `dashboard/collectors/`（認証Playwright→GAS→シート、毎朝6:30 launchd）。セットアップは `dashboard/collectors/README.md`。
+- 役割分担：
+  - Mac収集ロボ … Spotify / Airbnb / italki（ログイン要）
+  - このクラウド/朝イチルーチン … Gmail・Drive・カレンダー由来＋シート読取＋ダッシュボード整形
+
 ## 朝イチ・データ取得ルーチン（毎朝7:00 JST）
 1. **自動で取れるもの**（Drive / Gmail / Google Calendar から。ログイン不要）
    - ツアー: Airbnb入金・予約・催行（Gmail `automated@airbnb.com`）、カレンダー `424dsushbmfp4g29aq1580omiefiqlvt@import`、B2B請求（Drive）

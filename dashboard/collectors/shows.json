@@ -1,0 +1,11 @@
+{
+  "_comment": "Spotify for Creators の対象番組。showId は creators.spotify.com/home/show/<ここ> の部分。priority=顧客直結を優先収集。",
+  "shows": [
+    { "name": "アニつま（アニメつまみ食い）", "showId": "0a8nldHxvS9iWhPhwTRoO7", "priority": 1 },
+    { "name": "My ADDress Life｜多拠点生活", "showId": "5zTjEwjRYuDT6AC82qheaS", "priority": 3 },
+    { "name": "Nihongo Radio（日本語学習/英語圏）", "showId": "", "priority": 1 },
+    { "name": "アキバなう", "showId": "", "priority": 1 },
+    { "name": "ゼロからの体験ツアーガイドラジオ", "showId": "", "priority": 2 },
+    { "name": "みんらじ｜民泊ガイドラジオ", "showId": "", "priority": 2 }
+  ]
+}

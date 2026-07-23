@@ -1,0 +1,14 @@
+{
+  "name": "taisaku-collectors",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "対策室ダッシュボード用・ログイン要データの自動収集（Mac常駐）",
+  "scripts": {
+    "auth": "node save-auth.mjs",
+    "collect": "node scrape.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}
