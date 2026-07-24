@@ -30,7 +30,7 @@ if (!fs.existsSync('storageState.json')) {
 const clean = (s) => (s || '').replace(/[,\s]/g, '');
 function toNumber(str) {
   if (str == null) return null;
-  const m = String(str).match(/([\d.]+)\s*([KMkm]?)/);
+  const m = String(str).replace(/,/g, '').match(/([\d.]+)\s*([KMkm]?)/);
   if (!m) return null;
   let n = parseFloat(m[1]);
   const u = m[2].toUpperCase();
@@ -42,11 +42,12 @@ function parseShow(text) {
   const allTime = pick(/([\d.,]+\s*[KM]?)\s*all-time plays/i);
   const followers = pick(/([\d.,]+\s*[KM]?)\s*followers/i);
   // 「Plays & downloads … <数値> <±%> … Last 30 days」の並びから拾う
-  const l30block = text.match(/Plays\s*&\s*downloads([\s\S]{0,120}?)Last 30 days/i);
+  const l30block = text.match(/\nPlays\s*&\s*downloads\s*\n([\s\S]{0,60}?)Last 30 days/i);
   let plays30 = null, delta30 = null;
   if (l30block) {
     plays30 = (l30block[1].match(/([\d.,]+\s*[KM]?)/) || [])[1] || null;
-    delta30 = (l30block[1].match(/([+\-–][\d.]+%)/) || [])[1] || null;
+    const dm = l30block[1].match(/([+\-−–])\s*([\d.]+)\s*%/);
+    delta30 = dm ? (dm[1] === '+' ? '+' : '-') + dm[2] + '%' : null;
   }
   const latest = pick(/Latest Episode[\s\S]{0,60}?(#\d+[^\n]{0,60})/i);
   const published = pick(/Published on ([^\n]+)/i);
@@ -73,8 +74,9 @@ const page = await browser.newPage();
 
 for (const s of shows.filter((x) => x.showId)) {
   try {
-    await page.goto(`https://creators.spotify.com/home/show/${s.showId}`, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(2500);
+    // networkidle はSpotifyのSPA（常時ポーリング）で永久に発火せずタイムアウトするため domcontentloaded + 固定待ちに。
+    await page.goto(`https://creators.spotify.com/home/show/${s.showId}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForTimeout(5000);
     const text = await page.evaluate(() => document.body.innerText);
     fs.writeFileSync(path.join('debug', `${s.name}.txt`), text);
     const d = parseShow(text);

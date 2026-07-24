@@ -4,7 +4,7 @@
  * デプロイ：デプロイ → 新しいデプロイ → ウェブアプリ → 実行=自分 / アクセス=全員 → URLをコピー。
  * scrape.mjs の .env に SHEET_ENDPOINT=そのURL / SHEET_SECRET=下のSECRET を設定する。
  */
-var SECRET = 'CHANGE_ME_共有シークレット';           // ← 変更必須（.envのSHEET_SECRETと一致させる）
+var SECRET = 'CHANGE_ME_共有シークレット';           // ← .env の SHEET_SECRET と同じ値に変更（公開リポなので実値はコミットしない）
 var SHEET_ID = '1m-lt_n6bkNXW5gdASxJyLTSf0KeEVkq7prO_GFYQH9A';
 var HEADERS = ['番組', '全期間再生', 'フォロワー', '直近30日再生', '直近30日変化', '最新回', '状態', '更新日'];
 
