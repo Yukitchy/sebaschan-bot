@@ -65,10 +65,10 @@ function parseShow(text) {
 }
 
 const rows = [];
-const browser = await chromium.launchPersistentContext('', {
-  headless: true,
-  storageState: 'storageState.json',
-});
+// launchPersistentContext は storageState を受け付けない（無視されて未ログインになる）。
+// 通常の launch + newContext で保存済みCookieを読ませる。
+const browserApp = await chromium.launch({ headless: true });
+const browser = await browserApp.newContext({ storageState: 'storageState.json' });
 const page = await browser.newPage();
 
 for (const s of shows.filter((x) => x.showId)) {
