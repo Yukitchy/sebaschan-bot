@@ -3,6 +3,11 @@
 // ダイアログ無し・無人で取得できる。
 import { chromium } from 'playwright';
 import readline from 'node:readline';
+import path from 'node:path';
+
+// storageState.json は scrape.mjs と同じ「このスクリプトのあるフォルダ」に保存する。
+// cwd 基準だと、別の場所から実行したとき scrape.mjs が読む場所とズレて空振りする。
+const stateFile = path.join(import.meta.dirname, 'storageState.json');
 
 const ask = (q) => new Promise((res) => {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -46,7 +51,7 @@ while (true) {
   console.log('   右上に自分のアイコンが出て「ログイン済み」を確認したら、もう一度 Enter。');
 }
 
-await browser.storageState({ path: 'storageState.json' });
+await browser.storageState({ path: stateFile });
 console.log('✅ storageState.json に保存しました。');
 await browser.close();
 process.exit(0);

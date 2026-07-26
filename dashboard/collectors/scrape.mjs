@@ -10,10 +10,16 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 
+// 実行場所（cwd）に依存せず、このスクリプトのあるフォルダ基準でファイルを読み書きする。
+// これを省くと、リポジトリのルート等から手で実行したとき shows.json / storageState.json を
+// 見失って落ちる（実際にハマった）。run.sh は元々ここへ cd してから呼ぶので無影響。
+const here = import.meta.dirname;
+const at = (...p) => path.join(here, ...p);
+
 // ---- .env 読み込み（依存を増やさない簡易パーサ）----
 const env = {};
-if (fs.existsSync('.env')) {
-  for (const line of fs.readFileSync('.env', 'utf8').split('\n')) {
+if (fs.existsSync(at('.env'))) {
+  for (const line of fs.readFileSync(at('.env'), 'utf8').split('\n')) {
     const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/);
     if (m) env[m[1]] = m[2].replace(/^["']|["']$/g, '');
   }
@@ -22,11 +28,11 @@ const SHEET_ENDPOINT = env.SHEET_ENDPOINT || process.env.SHEET_ENDPOINT || '';
 const SHEET_SECRET = env.SHEET_SECRET || process.env.SHEET_SECRET || '';
 
 const today = new Date().toISOString().slice(0, 10);
-const { shows } = JSON.parse(fs.readFileSync('shows.json', 'utf8'));
-fs.mkdirSync('debug', { recursive: true });
-fs.mkdirSync('out', { recursive: true });
+const { shows } = JSON.parse(fs.readFileSync(at('shows.json'), 'utf8'));
+fs.mkdirSync(at('debug'), { recursive: true });
+fs.mkdirSync(at('out'), { recursive: true });
 
-if (!fs.existsSync('storageState.json')) {
+if (!fs.existsSync(at('storageState.json'))) {
   console.error('storageState.json が無い。先に `node save-auth.mjs` でログインを保存してください。');
   process.exit(1);
 }
@@ -99,7 +105,7 @@ let ok = 0, skipped = 0, authFail = 0;
 // launchPersistentContext は storageState を受け付けない（無視されて未ログインになる）。
 // 通常の launch + newContext で保存済みCookieを読ませる。
 const browserApp = await chromium.launch({ headless: true });
-const browser = await browserApp.newContext({ storageState: 'storageState.json' });
+const browser = await browserApp.newContext({ storageState: at('storageState.json') });
 const page = await browser.newPage();
 
 for (const s of shows.filter((x) => x.showId)) {
@@ -114,7 +120,7 @@ for (const s of shows.filter((x) => x.showId)) {
     console.error(`✗ ${s.name}: 取得失敗のためスキップ（既存値を保持）: ${res.err || ''}`);
     continue;
   }
-  fs.writeFileSync(path.join('debug', `${s.name}.txt`), res.text);
+  fs.writeFileSync(at('debug', `${s.name}.txt`), res.text);
   rows.push({ 番組: s.name, ...res.d, 更新日: today });
   ok++;
   console.log(`✓ ${s.name}: allTime=${res.d.allTime} followers=${res.d.followers} 30d=${res.d.plays30}(${res.d.delta30})`);
@@ -124,7 +130,7 @@ await browser.close();
 console.log(`--- 取得 ${ok}件 / スキップ ${skipped}件 / 未ログイン ${authFail}件 ---`);
 
 // ---- 出力：GASへPOST（無ければCSVフォールバック）。取得0件なら送らない＝上書き事故を防ぐ ----
-fs.writeFileSync('out/podcasts.json', JSON.stringify(rows, null, 2));
+fs.writeFileSync(at('out', 'podcasts.json'), JSON.stringify(rows, null, 2));
 if (rows.length === 0) {
   if (authFail > 0) {
     console.error('⚠️ 全番組が未ログイン。Cookieが切れています。`node save-auth.mjs`（または import-chrome-cookies.mjs）でログインを入れ直してください。今回はシートを更新しません。');
@@ -149,7 +155,7 @@ if (SHEET_ENDPOINT) {
   const csv = [header, ...rows.map((r) =>
     [r.番組, r.allTime ?? '', r.followers ?? '', r.plays30 ?? '', r.delta30 ?? '', r.latest ?? '', '自動取得', r.更新日].join(',')
   )].join('\n');
-  fs.writeFileSync('out/podcasts.csv', csv);
+  fs.writeFileSync(at('out', 'podcasts.csv'), csv);
   console.log('SHEET_ENDPOINT未設定。out/podcasts.csv に保存しました。');
 }
 console.log('done.');
