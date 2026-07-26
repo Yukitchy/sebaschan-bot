@@ -1,6 +1,11 @@
 // 対策室 収集ロボ本体。storageState.json（保存済みログイン）で Spotify for Creators を開き、
 // 各番組のKPIを取得して GAS Web App 経由でスプレッドシートへ upsert する。
 // computer-use 不使用＝許可ダイアログ無しで無人実行できる。
+//
+// 堅牢化(2026-07)：
+//  - 取得失敗した番組は「送らない」＝シートの既存の良い値を空欄で上書きしない。
+//  - 一時的な読み込み失敗は最大2回リトライ。
+//  - ログイン切れ（未ログイン画面）を検知し、良いデータを消さないよう送信中止＋再認証を促す。
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,7 +32,6 @@ if (!fs.existsSync('storageState.json')) {
 }
 
 // ---- テキストから数値を拾うヘルパー（DOM変更に強い text ベース）----
-const clean = (s) => (s || '').replace(/[,\s]/g, '');
 function toNumber(str) {
   if (str == null) return null;
   const m = String(str).replace(/,/g, '').match(/([\d.]+)\s*([KMkm]?)/);
@@ -52,7 +56,7 @@ function parseShow(text) {
   const latest = pick(/Latest Episode[\s\S]{0,60}?(#\d+[^\n]{0,60})/i);
   const published = pick(/Published on ([^\n]+)/i);
   const returning = pick(/Returning[\s\S]{0,24}?([\d,]+)/i);
-  const audNew = pick(/\bNew\b[\s\S]{0,24}?([\d,]+)/i);
+  const audNew = pick(/Returning[\s\S]{0,80}?\bNew\b[\s\S]{0,24}?([\d,]+)/i);
   return {
     allTime: toNumber(allTime),
     followers: toNumber(followers),
@@ -65,7 +69,33 @@ function parseShow(text) {
   };
 }
 
+// 1番組を取得。成功={d,text}／ログイン切れ={loginWall:true}／失敗={failed:true}
+async function fetchShow(page, s) {
+  let lastErr = '';
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      // networkidle はSpotifyのSPA（常時ポーリング）で永久に発火せずタイムアウトするため domcontentloaded + 固定待ちに。
+      await page.goto(`https://creators.spotify.com/home/show/${s.showId}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      // 「all-time plays」が描画されるまで待つ（SPAの遅延対策）。出なければそのまま進む。
+      await page.waitForFunction(() => /all-time plays/i.test(document.body.innerText), { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      const text = await page.evaluate(() => document.body.innerText);
+      const hasData = /all-time plays/i.test(text);
+      const loginWall = !hasData && /log in to spotify|ログイン|continue with/i.test(text);
+      if (loginWall) return { loginWall: true };
+      const d = parseShow(text);
+      if (d.allTime != null) return { d, text };
+      lastErr = 'all-time plays 見つからず';
+    } catch (e) {
+      lastErr = e.message;
+    }
+    await page.waitForTimeout(1500); // リトライ前に小休止
+  }
+  return { failed: true, err: lastErr };
+}
+
 const rows = [];
+let ok = 0, skipped = 0, authFail = 0;
 // launchPersistentContext は storageState を受け付けない（無視されて未ログインになる）。
 // 通常の launch + newContext で保存済みCookieを読ませる。
 const browserApp = await chromium.launch({ headless: true });
@@ -73,28 +103,36 @@ const browser = await browserApp.newContext({ storageState: 'storageState.json' 
 const page = await browser.newPage();
 
 for (const s of shows.filter((x) => x.showId)) {
-  try {
-    // networkidle はSpotifyのSPA（常時ポーリング）で永久に発火せずタイムアウトするため domcontentloaded + 固定待ちに。
-    await page.goto(`https://creators.spotify.com/home/show/${s.showId}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForTimeout(5000);
-    const text = await page.evaluate(() => document.body.innerText);
-    fs.writeFileSync(path.join('debug', `${s.name}.txt`), text);
-    const d = parseShow(text);
-    rows.push({ 番組: s.name, ...d, 更新日: today });
-    console.log(`✓ ${s.name}: allTime=${d.allTime} followers=${d.followers} 30d=${d.plays30}(${d.delta30})`);
-  } catch (e) {
-    console.error(`✗ ${s.name}: ${e.message}`);
+  const res = await fetchShow(page, s);
+  if (res.loginWall) {
+    authFail++;
+    console.error(`✗ ${s.name}: 未ログイン（ログイン切れ）`);
+    continue;
   }
+  if (res.failed || !res.d) {
+    skipped++;
+    console.error(`✗ ${s.name}: 取得失敗のためスキップ（既存値を保持）: ${res.err || ''}`);
+    continue;
+  }
+  fs.writeFileSync(path.join('debug', `${s.name}.txt`), res.text);
+  rows.push({ 番組: s.name, ...res.d, 更新日: today });
+  ok++;
+  console.log(`✓ ${s.name}: allTime=${res.d.allTime} followers=${res.d.followers} 30d=${res.d.plays30}(${res.d.delta30})`);
 }
 
-// ---- Airbnb / italki の雛形（要ログイン後にselector調整）----
-// async function collectAirbnb(page) { /* TODO: hosting → insights の売上/予約を取得 */ }
-// async function collectItalki(page) { /* TODO: teacher wallet の入金/単価を取得 */ }
-
 await browser.close();
+console.log(`--- 取得 ${ok}件 / スキップ ${skipped}件 / 未ログイン ${authFail}件 ---`);
 
-// ---- 出力：GASへPOST（無ければCSVフォールバック）----
+// ---- 出力：GASへPOST（無ければCSVフォールバック）。取得0件なら送らない＝上書き事故を防ぐ ----
 fs.writeFileSync('out/podcasts.json', JSON.stringify(rows, null, 2));
+if (rows.length === 0) {
+  if (authFail > 0) {
+    console.error('⚠️ 全番組が未ログイン。Cookieが切れています。`node save-auth.mjs`（または import-chrome-cookies.mjs）でログインを入れ直してください。今回はシートを更新しません。');
+  } else {
+    console.error('取得0件のため送信しません（シート据え置き）。');
+  }
+  process.exit(2);
+}
 if (SHEET_ENDPOINT) {
   try {
     const res = await fetch(SHEET_ENDPOINT, {

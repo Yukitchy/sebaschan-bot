@@ -24,22 +24,29 @@ function doPost(e) {
     var nameCol = 0; // A列＝番組名
     var updated = 0, added = 0;
 
+    var todayStr = (new Date()).toISOString().slice(0, 10);
+    // 値が「有る」時だけ採用するヘルパー（空・null・undefinedは既存値を保持）。
+    function keep(incoming, existing) {
+      return (incoming === null || incoming === undefined || incoming === '') ? existing : incoming;
+    }
     (body.rows || []).forEach(function (r) {
-      var row = [
-        r['番組'] || '',
-        r.allTime != null ? r.allTime : '',
-        r.followers != null ? r.followers : '',
-        r.plays30 != null ? r.plays30 : '',
-        r.delta30 || '',
-        r.latest || '',
-        '自動取得',
-        r['更新日'] || (new Date()).toISOString().slice(0, 10)
-      ];
-      // 既存行を番組名で探して upsert
+      // 既存行を番組名で探す
       var found = -1;
       for (var i = 1; i < data.length; i++) {
         if (String(data[i][nameCol]).trim() === String(r['番組']).trim()) { found = i; break; }
       }
+      var prev = found >= 0 ? data[found] : [];
+      // ★劣化防止：受信フィールドが空なら既存セルを保持（丸ごと上書きしない）。
+      var row = [
+        r['番組'] || prev[0] || '',
+        keep(r.allTime, prev[1] != null ? prev[1] : ''),
+        keep(r.followers, prev[2] != null ? prev[2] : ''),
+        keep(r.plays30, prev[3] != null ? prev[3] : ''),
+        keep(r.delta30, prev[4] != null ? prev[4] : ''),
+        keep(r.latest, prev[5] != null ? prev[5] : ''),
+        '自動取得',
+        r['更新日'] || todayStr
+      ];
       if (found >= 0) {
         sh.getRange(found + 1, 1, 1, row.length).setValues([row]);
         updated++;
