@@ -1,0 +1,824 @@
+<title>ユウキ対策室 — 事業ダッシュボード</title>
+<style>
+  :root{
+    color-scheme: light;
+    --plane:#f6f5f2; --surface:#fdfcfb; --surface-2:#f0eee8; --raise:#ffffff;
+    --ink:#17150e; --ink-2:#55524a; --muted:#8c8981; --hair:#e5e2d9; --hair-2:#d8d4c8;
+    --accent:#4a3aa7; --accent-2:#6a5bd0; --accent-soft:#ece9f8;
+    --tour:#2a78d6; --lesson:#eb6834; --program:#1baf7a; --canal:#eda100;
+    --tour-soft:#e2edfb; --lesson-soft:#fbe6dc; --program-soft:#dcf1ea; --canal-soft:#f8ecc9;
+    --good:#0ca30c; --warn:#c98500; --serious:#d0632f; --critical:#d03b3b;
+    --good-ink:#0a7d18; --shadow:0 1px 2px rgba(20,18,10,.05),0 2px 10px rgba(20,18,10,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --plane:#0c0c0b; --surface:#18181a; --surface-2:#201f22; --raise:#1f1f21;
+      --ink:#f4f2ea; --ink-2:#c3c2b7; --muted:#8f8d84; --hair:#2b2b2a; --hair-2:#39383a;
+      --accent:#9085e9; --accent-2:#a99fef; --accent-soft:#211d33;
+      --tour:#3987e5; --lesson:#e0632f; --program:#22b585; --canal:#e0a013;
+      --tour-soft:#16273d; --lesson-soft:#3a2118; --program-soft:#123028; --canal-soft:#33280d;
+      --good:#22b12a; --warn:#e0a013; --serious:#e0783f; --critical:#e05656;
+      --good-ink:#3ac74a; --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --plane:#0c0c0b; --surface:#18181a; --surface-2:#201f22; --raise:#1f1f21;
+    --ink:#f4f2ea; --ink-2:#c3c2b7; --muted:#8f8d84; --hair:#2b2b2a; --hair-2:#39383a;
+    --accent:#9085e9; --accent-2:#a99fef; --accent-soft:#211d33;
+    --tour:#3987e5; --lesson:#e0632f; --program:#22b585; --canal:#e0a013;
+    --tour-soft:#16273d; --lesson-soft:#3a2118; --program-soft:#123028; --canal-soft:#33280d;
+    --good:#22b12a; --warn:#e0a013; --serious:#e0783f; --critical:#e05656;
+    --good-ink:#3ac74a; --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;font-feature-settings:"palt";}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 20px 90px}
+  .num{font-variant-numeric:tabular-nums}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  a{color:var(--accent)}
+
+  /* header */
+  .hero{border:1px solid var(--hair);background:
+    radial-gradient(120% 140% at 100% 0%,var(--accent-soft) 0%,transparent 55%),var(--surface);
+    border-radius:16px;padding:24px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-2);font-weight:700}
+  .hero h1{font-size:clamp(26px,4.4vw,40px);font-weight:800;letter-spacing:-.01em;margin:6px 0 8px;line-height:1.1}
+  .hero p{margin:0;color:var(--ink-2);max-width:66ch;font-size:15px}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:16px;font-size:12.5px;color:var(--muted)}
+  .hero .meta b{color:var(--ink-2);font-weight:600}
+  .themebtn{position:absolute;top:16px;right:16px;border:1px solid var(--hair-2);background:var(--surface-2);
+    color:var(--ink-2);border-radius:9px;padding:6px 11px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .themebtn:hover{color:var(--ink)}
+
+  section{margin-top:34px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .sec-h h2{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .sec-h .k{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .sec-h .note{font-size:13px;color:var(--ink-2);margin-left:auto}
+
+  /* stat tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+  .tile{background:var(--surface);border:1px solid var(--hair);border-radius:13px;padding:15px 16px;box-shadow:var(--shadow)}
+  .tile .lab{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px}
+  .tile .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .tile .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:7px;line-height:1.05}
+  .tile .v small{font-size:14px;font-weight:700;color:var(--ink-2)}
+  .tile .sub{font-size:12px;color:var(--ink-2);margin-top:4px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+    border:1px solid transparent}
+  .chip.good{color:var(--good-ink);background:color-mix(in srgb,var(--good) 14%,transparent)}
+  .chip.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+  .chip.crit{color:var(--critical);background:color-mix(in srgb,var(--critical) 14%,transparent)}
+
+  /* cards / charts */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;font-weight:750;display:flex;align-items:center;gap:8px}
+  .card .cap{font-size:12.5px;color:var(--ink-2);margin:3px 0 12px}
+  .bl-dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+
+  svg{display:block;width:100%;overflow:visible}
+  .axis text{fill:var(--muted);font-size:10.5px}
+  .gl{stroke:var(--hair);stroke-width:1}
+  .bar{cursor:pointer;transition:opacity .12s}
+  .bar:hover{opacity:.82}
+  .vlab{fill:var(--ink-2);font-size:10px;font-weight:700;text-anchor:middle}
+  .zero-band{fill:color-mix(in srgb,var(--critical) 9%,transparent)}
+
+  /* tooltip */
+  .tt{position:fixed;pointer-events:none;z-index:50;background:var(--raise);border:1px solid var(--hair-2);
+    border-radius:10px;padding:9px 11px;font-size:12px;color:var(--ink);box-shadow:0 6px 24px rgba(0,0,0,.18);
+    opacity:0;transition:opacity .1s;max-width:230px}
+  .tt b{font-weight:750}
+  .tt .r{display:flex;justify-content:space-between;gap:14px;color:var(--ink-2)}
+  .tt .r b{color:var(--ink)}
+
+  /* panel cards */
+  .panel{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:0;box-shadow:var(--shadow);overflow:hidden}
+  .panel .top{padding:15px 17px 13px;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,var(--surface-2),transparent)}
+  .panel .role{display:flex;align-items:center;gap:10px}
+  .panel .role .n{font-size:11px;font-weight:800;color:#fff;background:var(--accent);width:24px;height:24px;
+    border-radius:7px;display:grid;place-items:center;flex:none}
+  .panel .role h3{font-size:15.5px;font-weight:800}
+  .panel .bet{font-size:13px;color:var(--ink-2);margin-top:9px;padding-left:2px;border-left:0}
+  .panel .bet b{color:var(--ink)}
+  .panel .body{padding:14px 17px 16px}
+  .dx{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:2px 0 8px}
+  .panel ul{margin:0 0 14px;padding:0;list-style:none;display:grid;gap:7px}
+  .panel ul li{font-size:12.7px;color:var(--ink-2);padding-left:16px;position:relative;line-height:1.5}
+  .panel ul li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--accent-2)}
+  .act{border:1px solid var(--hair);border-radius:11px;padding:11px 12px;background:var(--surface-2);display:grid;gap:6px}
+  .acts{display:grid;gap:9px}
+  .act .ah{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+  .act .at{font-size:13px;font-weight:750;line-height:1.35}
+  .act .bl{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap;flex:none;margin-top:1px}
+  .act .why{font-size:12px;color:var(--ink-2)}
+  .act .meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:11px}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-weight:700;border:1px solid var(--hair-2);color:var(--ink-2)}
+  .badge.i-hi{color:#fff;background:var(--accent);border-color:transparent}
+  .badge.i-mid{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+  .act .step{font-size:11.5px;color:var(--ink-2);border-top:1px dashed var(--hair-2);padding-top:6px;margin-top:1px}
+  .act .step b{color:var(--good-ink);font-weight:700}
+
+  /* consensus / roadmap */
+  .conv{background:
+    radial-gradient(100% 120% at 0% 0%,var(--accent-soft) 0%,transparent 60%),var(--surface);
+    border:1px solid var(--hair);border-radius:16px;padding:20px 20px 8px;box-shadow:var(--shadow)}
+  .moves{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px}
+  .move{border:1px solid var(--hair-2);border-radius:12px;padding:14px;background:var(--surface)}
+  .move .rank{font-size:11px;font-weight:800;color:var(--accent-2);letter-spacing:.1em}
+  .move h4{margin:5px 0 6px;font-size:15px;font-weight:800;line-height:1.3}
+  .move p{margin:0;font-size:12.5px;color:var(--ink-2)}
+  .move .votes{margin-top:9px;font-size:11px;font-weight:700;color:var(--good-ink);
+    background:color-mix(in srgb,var(--good) 12%,transparent);display:inline-block;padding:2px 8px;border-radius:999px}
+  .road{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:16px;border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+  .road .col{padding:14px 15px;border-right:1px solid var(--hair)}
+  .road .col:last-child{border-right:0}
+  .road .when{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.04em}
+  .road ul{list-style:none;margin:9px 0 0;padding:0;display:grid;gap:7px}
+  .road li{font-size:12.3px;color:var(--ink-2);padding-left:16px;position:relative}
+  .road li::before{content:"→";position:absolute;left:0;color:var(--accent-2);font-weight:700}
+
+  /* gap */
+  .gap{border:1px solid var(--hair);border-radius:14px;background:var(--surface);padding:6px 4px;box-shadow:var(--shadow)}
+  .gaprow{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid var(--hair)}
+  .gaprow:last-child{border-bottom:0}
+  .gaprow .ic{width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:13px;
+    background:color-mix(in srgb,var(--serious) 15%,transparent)}
+  .gaprow .g-main{flex:1}
+  .gaprow .g-t{font-size:13.5px;font-weight:700}
+  .gaprow .g-s{font-size:12.3px;color:var(--ink-2);margin-top:2px}
+  .gaprow .g-need{font-size:11px;font-weight:700;color:var(--serious);white-space:nowrap;border:1px solid color-mix(in srgb,var(--serious) 40%,transparent);
+    padding:3px 9px;border-radius:999px;margin-top:2px}
+
+  .foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--hair);font-size:12px;color:var(--muted);line-height:1.7}
+  .foot b{color:var(--ink-2)}
+
+  @media(max-width:820px){.grid2,.grid3,.moves,.road,.moves{grid-template-columns:1fr}
+    .road .col{border-right:0;border-bottom:1px solid var(--hair)}
+    .panels{grid-template-columns:1fr}}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  /* podcast deep-dive */
+  .pod-top{display:grid;grid-template-columns:1.05fr 1fr;gap:16px}
+  .asset-list{display:grid;gap:9px;margin-top:4px}
+  .asset{display:flex;gap:10px;align-items:flex-start;font-size:12.7px;color:var(--ink-2)}
+  .asset .k{font-size:11px;font-weight:800;color:var(--program);background:var(--program-soft);
+    padding:2px 8px;border-radius:6px;white-space:nowrap;flex:none;margin-top:1px}
+  .asset b{color:var(--ink);font-weight:700}
+  .intake{border:1px solid color-mix(in srgb,var(--serious) 45%,var(--hair));background:
+    linear-gradient(180deg,color-mix(in srgb,var(--serious) 7%,var(--surface)),var(--surface))}
+  .intake .want{display:grid;gap:7px;margin:10px 0 12px}
+  .intake .want div{font-size:12.3px;color:var(--ink-2);padding-left:18px;position:relative}
+  .intake .want div::before{content:"▸";position:absolute;left:0;color:var(--serious);font-size:11px;font-weight:700}
+  .ph-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:6px}
+  .ph{border:1px dashed var(--hair-2);border-radius:10px;padding:11px 10px;background:var(--surface-2);text-align:center}
+  .ph .pht{font-size:11.5px;font-weight:750;color:var(--ink-2)}
+  .ph .phs{font-size:10.5px;color:var(--muted);margin-top:3px}
+  .ph .phi{font-size:18px;opacity:.5}
+  .ptable-wrap{margin-top:16px;overflow-x:auto;border:1px solid var(--hair);border-radius:12px;background:var(--surface);box-shadow:var(--shadow)}
+  table.ptable{border-collapse:collapse;width:100%;min-width:560px;font-size:12.7px}
+  table.ptable th,table.ptable td{padding:10px 13px;text-align:right;border-bottom:1px solid var(--hair);white-space:nowrap}
+  table.ptable th{font-size:11px;color:var(--muted);font-weight:700;text-align:right;background:var(--surface-2)}
+  table.ptable th:first-child,table.ptable td:first-child{text-align:left}
+  table.ptable td.num{font-variant-numeric:tabular-nums}
+  table.ptable tr:last-child td{border-bottom:0}
+  table.ptable td.name{font-weight:700;color:var(--ink)}
+  table.ptable .tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px}
+  table.ptable .tag.live{color:var(--good-ink);background:color-mix(in srgb,var(--good) 14%,transparent)}
+  table.ptable .tag.wait{color:var(--serious);background:color-mix(in srgb,var(--serious) 13%,transparent)}
+  table.ptable .tag.dorm{color:var(--muted);background:var(--surface-2);border:1px solid var(--hair-2)}
+  table.ptable tr.pending td{color:var(--muted)}
+  .pod-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .pa{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow);display:grid;gap:7px;align-content:start}
+  .pa .pah{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+  .pa .pat{font-size:13.5px;font-weight:800;line-height:1.35}
+  .pa .pad{font-size:12.3px;color:var(--ink-2)}
+  .pa .pam{display:flex;gap:6px;flex-wrap:wrap;font-size:10.5px;margin-top:1px}
+  .pa .need{font-size:10.5px;font-weight:700;color:var(--serious);border:1px solid color-mix(in srgb,var(--serious) 40%,transparent);padding:1px 7px;border-radius:999px;white-space:nowrap}
+  .pa .ready{font-size:10.5px;font-weight:700;color:var(--good-ink);border:1px solid color-mix(in srgb,var(--good) 40%,transparent);padding:1px 7px;border-radius:999px;white-space:nowrap}
+  @media(max-width:820px){.pod-top{grid-template-columns:1fr}.pod-acts,.ph-row{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <button class="themebtn" onclick="tgl()">◐ テーマ</button>
+    <div class="eyebrow">Yuki Ops — 対策室</div>
+    <h1>アニメ × 日本語 × 来日体験<br>事業ダッシュボード</h1>
+    <p>ご主人様の全事業の実データを、Drive・Gmail・カレンダーから拾って集約しました。数値は<b>実データ準拠</b>（推定は「推」と明記）。5人の対策室チームが独立に診断し、施策へ落とし込んでいます。</p>
+    <div class="meta">
+      <span>データ窓 <b>2025-07 → 2026-07</b></span>
+      <span>収集源 <b>Airbnb / italki / Podcast各RSS / Drive / Gmail / Google Calendar</b></span>
+      <span>作成 <b>2026-07-23</b></span>
+      <span>分析視点 <b>データ / グロース / マーケ / 財務 / プロダクト</b></span>
+    </div>
+  </header>
+
+  <!-- ===== KPI ===== -->
+  <section>
+    <div class="sec-h"><span class="k">01</span><h2>いまの数字</h2>
+      <span class="note">確定できた実数のみ。灰色は「計測できていない」＝下の計測の穴へ</span></div>
+    <div class="tiles">
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--tour)"></span>ツアー評価</div>
+        <div class="v num">4.98<small> / 5.0</small></div>
+        <div class="sub">全164件・5★が162件。<span class="chip good">品質は文句なし</span></div>
+      </div>
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--tour)"></span>Airbnb入金（実測6か月）</div>
+        <div class="v num">¥505<small>k</small></div>
+        <div class="sub">2025-11〜2026-04＝約$3,372（@150・推）</div>
+      </div>
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--tour)"></span>B2B直販（5月・催行ゼロ月）</div>
+        <div class="v num">¥111<small>,793</small></div>
+        <div class="sub">手数料ゼロ・閑散期でも計上 <span class="chip good">最強チャネル</span></div>
+      </div>
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--lesson)"></span>レッスン継続率</div>
+        <div class="v num">42<small>%</small></div>
+        <div class="sub">コミュニティ平均66% <span class="chip crit">−24pt の穴</span></div>
+      </div>
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--lesson)"></span>レッスン（H1 2026）</div>
+        <div class="v num">142<small>回 / 45人</small></div>
+        <div class="sub">15か国・Chit-chat主体・来日相談が定番</div>
+      </div>
+      <div class="tile">
+        <div class="lab"><span class="dot" style="background:var(--program)"></span>番組（Spotify実数）</div>
+        <div class="v num">410<small>K 全期間再生</small></div>
+        <div class="sub">16本・フォロワー2,498・月7,403再生 <span class="chip good">16/16 実数取得済</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHARTS ===== -->
+  <section>
+    <div class="sec-h"><span class="k">02</span><h2>これまでの傾向</h2>
+      <span class="note">棒にカーソルで内訳。夏の帯＝Airbnb催行ゼロ月</span></div>
+    <div class="grid2">
+      <div class="card">
+        <h3><span class="bl-dot" style="background:var(--tour)"></span>ツアー：月次ゲスト数（Airbnbチャネル実数）</h3>
+        <div class="cap">秋（10-11月）と正月が山、真夏〜初夏が谷。2026-05〜07は3か月連続で催行ゼロ。</div>
+        <svg id="c-tour" viewBox="0 0 560 220" role="img" aria-label="ツアー月次ゲスト数"></svg>
+      </div>
+      <div class="card">
+        <h3><span class="bl-dot" style="background:var(--lesson)"></span>レッスン：月次レッスン数</h3>
+        <div class="cap">月20〜29で安定も、2026後半は17〜20へ微減。数字の下＝新規体験申込。</div>
+        <svg id="c-lesson" viewBox="0 0 560 220" role="img" aria-label="レッスン月次"></svg>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card">
+        <h3><span class="bl-dot" style="background:var(--program)"></span>番組：配信本数（記録がある番組）</h3>
+        <div class="cap">継続力＝最大の資産。ただし再生数の84%は「更新停止中の上位2本」が稼いでいる（下の表）。</div>
+        <svg id="c-prog" viewBox="0 0 560 236" role="img" aria-label="番組配信本数"></svg>
+      </div>
+      <div class="card">
+        <h3><span class="bl-dot" style="background:var(--tour)"></span>ツアー売上チャネル構成（推）</h3>
+        <div class="cap">レビュー内訳（Airbnb126/Viator20/TA18）からの推定。Viatorは少レビューで売上比が突出。</div>
+        <svg id="c-chan" viewBox="0 0 560 96" role="img" aria-label="チャネル構成"></svg>
+        <div class="legend">
+          <span><span class="bl-dot" style="background:var(--tour)"></span>Airbnb 55%（手数料20%）</span>
+          <span><span class="bl-dot" style="background:var(--program)"></span>Viator 30%</span>
+          <span><span class="bl-dot" style="background:var(--canal)"></span>TripAdvisor 15%</span>
+        </div>
+        <div class="cap" style="margin-top:12px">
+          <b style="color:var(--ink)">B2B直販は別枠で存在：</b> 1月 ¥139,000 / 4月 ¥81,000 / 5月 ¥111,793。TCL Japanは単価 ¥15,000→¥60,000（4倍）でリピート化。手数料ゼロ＝利益率が最も高い。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5 PANEL ===== -->
+  <section>
+    <div class="sec-h"><span class="k">03</span><h2>対策室の診断と施策</h2>
+      <span class="note">同じ実データを5つの視点から診断し、施策へ落とす</span></div>
+    <div class="panels" id="panels"></div>
+  </section>
+
+  <!-- ===== CONSENSUS ===== -->
+  <section>
+    <div class="sec-h"><span class="k">04</span><h2>結論：最優先の一手</h2>
+      <span class="note">全ての視点が独立に同じ場所を指した</span></div>
+    <div class="conv">
+      <div class="moves">
+        <div class="move">
+          <div class="rank">最優先 · P1</div>
+          <h4>まず「測れる」状態にする</h4>
+          <p>売上の過半（Airbnb円建て・レッスン単価・番組再生数・Canal売上）が未計測のまま事業配分を判断している。計測が全施策の前提。<b>時間会計</b>で無収益活動の投下時間も可視化。</p>
+          <div class="votes">全ての視点が一致</div>
+        </div>
+        <div class="move">
+          <div class="rank">本命 · P2</div>
+          <h4>B2B直販を主収益に＋値上げ</h4>
+          <p>手数料ゼロ・高単価・閑散期耐性の三拍子。TCL Japanは4倍単価でもリピート。評価4.98＝価格弾力性が低い実証。Airbnb/直販を<b>+20〜30%</b>、B2Bを2〜3社へ横展開。</p>
+          <div class="votes">財務・データ・グロース・プロダクトが支持</div>
+        </div>
+        <div class="move">
+          <div class="rank">循環 · P3</div>
+          <h4>レッスン⇄ツアーの橋を架ける</h4>
+          <p>来日相談が定番の生徒45人・15か国は<b>集客コストゼロ</b>の最高リード。「来日パスポート」でツアー→Canal Palaceへ送客。同時に体験→2回目導線で継続42%を底上げ。</p>
+          <div class="votes">全ての視点が一致</div>
+        </div>
+      </div>
+      <div class="road">
+        <div class="col">
+          <div class="when">今週やる</div>
+          <ul>
+            <li>Airbnb管理画面の円建てCSV＋italki teacher wallet をDL（実単価を確定）</li>
+            <li>リピーター核6名（Chester等）へ「秋の来日ツアー優先枠」DM</li>
+            <li>全番組の説明欄にUTM付きリンク＋番組別クーポン</li>
+            <li>直販／B2B下限を +20〜30% 改定（次の見積から）</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="when">30日以内</div>
+          <ul>
+            <li>TCL Japanモデルを卸価格表化→語学学校・旅行会社2社へ提案</li>
+            <li>体験→2回目「漢字つまずき診断」フォローをA/B</li>
+            <li>星5レビュー20件を自社LPへ（Review schema付き）</li>
+            <li>主力2番組の直近3か月再生数を計測シートへ手記録</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="when">90日で形に</div>
+          <ul>
+            <li>「来日パスポート」＝レッスン→ツアー→Canal の1本パッケージ</li>
+            <li>閑散期を埋めるバーチャルアキバツアー（Zoom・Acuity）</li>
+            <li>英語番組（JLPT N1）を集客旗艦に、日本語番組はB2B供給に役割分離</li>
+            <li>漢字つまずき教材のセルフサーブ商品化</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PODCAST DEEP DIVE ===== -->
+  <section>
+    <div class="sec-h"><span class="k">05</span><h2>番組（Podcast）を伸ばす</h2>
+      <span class="note">16本すべての実数が入りました。ここからは「選択と集中」の判断だけ</span></div>
+
+    <div class="pod-top">
+      <div class="card">
+        <h3><span class="bl-dot" style="background:var(--program)"></span>棚卸し：眠っている番組資産</h3>
+        <div class="cap">Gmail・Driveから判明した範囲。ストック資産は想像より大きい。</div>
+        <div class="asset-list">
+          <div class="asset"><span class="k">主力</span><div>現役の週1は<b>みんらじ（#145）</b>・<b>体験ツアーガイドラジオ（#136）</b>。各2年以上完走の継続力＝最大資産。どちらも<b>直近30日は伸びている</b>（体験ツアー +66.7%）。</div></div>
+          <div class="asset"><span class="k">規模</span><div><b>Spotify上に16番組・全期間41万再生・フォロワー2,498</b>（16本すべて実数取得）。だが<b>上位2本で再生の84%</b>。休眠・終了が6本。</div></div>
+          <div class="asset"><span class="k">お宝</span><div><b>アニつま216.4K</b>と<b>Nihongo Radio 126.4K</b>。<b>2本とも更新停止中なのに毎月4,000再生・新規436人</b>を連れてくる＝寝ている集客エンジンが2基。金を払う顧客（英語圏アニメオタク）に直結する題材はここだけ。</div></div>
+          <div class="asset"><span class="k">装備</span><div><b>Headliner連携済み</b>（音声→動画クリップ自動生成）。<b>音声広告の営業インバウンド</b>あり（Audiostart AD／Otonal）。番組ごとに専用メールaliasで整理運用。</div></div>
+          <div class="asset"><span class="k">実績</span><div>#100百回記念回・姉妹番組コラボ回（#62等）・フォロワー1万人達成回（#106）など、<b>反応の取れる回のパターン</b>が既にある。</div></div>
+        </div>
+      </div>
+
+      <div class="card intake">
+        <h3><span class="bl-dot" style="background:var(--good)"></span>数字の受け皿：直接読取に切替（2026-07-24）</h3>
+        <div class="cap">スクショ待ちは終了。ログイン済みChromeのセッションから<b>Spotify for Creators を直接開いて16本すべて読み取り</b>ました。<span class="chip good">16/16 取得済み</span></div>
+        <div class="want">
+          <div>各番組ホームの<b>全期間 plays / followers / 直近30日</b> … <b>16本 取得済</b></div>
+          <div><b>Audience</b>（新規・再訪リスナー数） … <b>14本 取得済</b>（残り2本は表示なし）</div>
+          <div><b>Audience詳細</b>（国・性別・再生アプリ） … <b>アニつまのみ取得</b></div>
+          <div>取得ルート: <code>creators.spotify.com/home/show/&lt;showId&gt;</code>（showIdは台帳DATA.mdに記録済）</div>
+        </div>
+        <div class="cap" style="margin:6px 0 0">
+          <b style="color:var(--ink)">残っているのは1つだけ：</b> みんらじ／体験ツアー／Nihongo／アキバなう の<b>Audience詳細（国・性別）</b>。Analyticsタブが重くロードし切らなかったため次回に持ち越し。判断に必要な数字はすでに揃っています。
+        </div>
+      </div>
+    </div>
+
+    <div class="ptable-wrap">
+      <table class="ptable">
+        <thead><tr>
+          <th>番組</th><th>全期間 再生・DL</th><th>フォロワー</th><th>直近30日</th><th>新規/再訪（30日）</th><th>最新回</th><th>状態</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="name">アニつま（アニメつまみ食い）</td>
+            <td class="num">216.4K</td><td class="num">1,055</td>
+            <td class="num">2,515 <span style="color:var(--critical)">−13.3%</span></td>
+            <td class="num">269 / 67</td>
+            <td class="num">#145 (2025-10)</td>
+            <td><span class="tag live">寝てる主力</span></td>
+          </tr>
+          <tr>
+            <td class="name">Nihongo Radio with ANIME SENSEI</td>
+            <td class="num">126.4K</td><td class="num">883</td>
+            <td class="num">1,461 <span style="color:var(--critical)">−51.3%</span></td>
+            <td class="num">167 / 36</td>
+            <td class="num">#658 (2024-07)</td>
+            <td><span class="tag live">寝てる第2</span></td>
+          </tr>
+          <tr>
+            <td class="name">みんらじ｜民泊ガイドラジオ</td>
+            <td class="num">38,185</td><td class="num">199</td>
+            <td class="num">1,501 <span style="color:var(--critical)">−3.3%</span></td>
+            <td class="num">26 / 38</td>
+            <td class="num">#145 (2026-07-24)</td>
+            <td><span class="tag live">現役・週1</span></td>
+          </tr>
+          <tr>
+            <td class="name">ゼロからの体験ツアーガイドラジオ</td>
+            <td class="num">11,165</td><td class="num">138</td>
+            <td class="num">1,107 <span style="color:var(--good)">+66.7%</span></td>
+            <td class="num">14 / 30</td>
+            <td class="num">#136 (2026-07-24)</td>
+            <td><span class="tag live">現役・伸長</span></td>
+          </tr>
+          <tr>
+            <td class="name">イレギュラーコーヒー</td>
+            <td class="num">4,434</td><td class="num">50</td>
+            <td class="num">202 <span style="color:var(--critical)">−50.1%</span></td>
+            <td class="num">0 / 7</td>
+            <td class="num">#2-7 (2026-07-13)</td>
+            <td><span class="tag live">現役</span></td>
+          </tr>
+          <tr>
+            <td class="name">ノマドラジオ</td>
+            <td class="num">3,920</td><td class="num">22</td>
+            <td class="num">110 <span style="color:var(--critical)">−70.5%</span></td>
+            <td class="num">—</td>
+            <td class="num">#111 (2024-10)</td>
+            <td><span class="tag dorm">休眠</span></td>
+          </tr>
+          <tr>
+            <td class="name">多拠点生活な日々</td>
+            <td class="num">2,869</td><td class="num">47</td>
+            <td class="num">113 <span style="color:var(--critical)">−49.1%</span></td>
+            <td class="num">2 / 0</td>
+            <td class="num">#55 (2024-10・最終回)</td>
+            <td><span class="tag dorm">終了</span></td>
+          </tr>
+          <tr>
+            <td class="name">My ADDress Life｜多拠点生活</td>
+            <td class="num">2,502</td><td class="num">46</td>
+            <td class="num">34 <span style="color:var(--critical)">−68.5%</span></td>
+            <td class="num">1 / 0</td>
+            <td class="num">#32 (2023-03)</td>
+            <td><span class="tag dorm">休眠</span></td>
+          </tr>
+          <tr>
+            <td class="name">厚木トーク｜厚木のしゃべり場</td>
+            <td class="num">2,475</td><td class="num">7</td>
+            <td class="num">86 <span style="color:var(--critical)">−79.5%</span></td>
+            <td class="num">0 / 2</td>
+            <td class="num">#103 (2026-05)</td>
+            <td><span class="tag dorm">低稼働</span></td>
+          </tr>
+          <tr>
+            <td class="name">アキバなう</td>
+            <td class="num">935</td><td class="num">9</td>
+            <td class="num">115 <span style="color:var(--critical)">−12.9%</span></td>
+            <td class="num">0 / 2</td>
+            <td class="num">#25 (2026-07-12)</td>
+            <td><span class="tag live">現役・立上げ期</span></td>
+          </tr>
+          <tr>
+            <td class="name">オタクのざつだん JLPT N1</td>
+            <td class="num">387</td><td class="num">5</td>
+            <td class="num">65 <span style="color:var(--critical)">−8.5%</span></td>
+            <td class="num">1 / 1</td>
+            <td class="num">#7 (2026-04)</td>
+            <td><span class="tag dorm">低稼働</span></td>
+          </tr>
+          <tr>
+            <td class="name">偏愛Channel</td>
+            <td class="num">273</td><td class="num">14</td>
+            <td class="num">21 <span style="color:var(--critical)">−4.5%</span></td>
+            <td class="num">0 / 1</td>
+            <td class="num">#8 (2026-03)</td>
+            <td><span class="tag dorm">低稼働</span></td>
+          </tr>
+          <tr>
+            <td class="name">メンタルよわよわラジオ</td>
+            <td class="num">103</td><td class="num">11</td>
+            <td class="num">35 <span style="color:var(--critical)">−5.4%</span></td>
+            <td class="num">5 / 5</td>
+            <td class="num">#6 (2026-07-14)</td>
+            <td><span class="tag live">現役・立上げ期</span></td>
+          </tr>
+          <tr>
+            <td class="name">エンタメ暇つぶしラジオ</td>
+            <td class="num">42</td><td class="num">1</td>
+            <td class="num">0</td>
+            <td class="num">—</td>
+            <td class="num">#8 (2024-03)</td>
+            <td><span class="tag dorm">休眠</span></td>
+          </tr>
+          <tr>
+            <td class="name">素人AIラジオ</td>
+            <td class="num">38</td><td class="num">7</td>
+            <td class="num">28</td>
+            <td class="num">5 / 2</td>
+            <td class="num">#6 (2026-07-19)</td>
+            <td><span class="tag live">現役・立上げ期</span></td>
+          </tr>
+          <tr>
+            <td class="name">愛の猫パンチ｜マーケプロの業界口出し系</td>
+            <td class="num">10</td><td class="num">4</td>
+            <td class="num">10</td>
+            <td class="num">4 / 0</td>
+            <td class="num">#1 (2026-07-20)</td>
+            <td><span class="tag live">開始直後</span></td>
+          </tr>
+          <tr style="font-weight:700;background:var(--surface-2)">
+            <td class="name">合計（16本）</td>
+            <td class="num">410,138</td><td class="num">2,498</td>
+            <td class="num">7,403</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:10px;border-left:3px solid var(--program)">
+      <h3><span class="bl-dot" style="background:var(--program)"></span>気づき：寝ている集客エンジンが「2基」あった</h3>
+      <div class="cap" style="margin-bottom:0">
+        16本すべての実数が入って、構造がはっきりしました。<b>アニつま216.4K＋Nihongo Radio 126.4K＝全期間再生の84%</b>。そして<b>この2本はどちらも更新停止中</b>（最終回 2025-10 / 2024-07）なのに、<b>毎月4,000再生・新規リスナー436人</b>を連れてきます。全体の新規の<b>94%がこの2本</b>。＝新作ゼロで回り続ける評価済み資産が2基あるということ。<br>
+        一方、<b>2026年に立ち上げた新番組6本の合計は全期間1,746再生</b>——アニつま1本の0.8%。<b>番組を増やす方向のROIは数字上ほぼゼロ</b>と出ました。現役で伸びているのは<b>体験ツアーガイドラジオ（+66.7%）</b>と<b>みんらじ（消費時間+14.9%）</b>で、これはB2B供給側（ガイド／民泊ホスト）を集める番組。つまり<b>「客を集める2本は寝ていて、起きている2本は仲間を集めている」</b>という配置になっています。打つ手は明確で、<b>①寝てる2本の再稼働＋回末CTA／②新番組の刈り込み（施策⑥）／③アニつまのAmazon Music 37.9%を踏まえた配信面の最適化</b>。
+      </div>
+    </div>
+
+    <div class="pod-acts">
+      <div class="pa">
+        <div class="pah"><div class="pat">① アニメ番組を復活・主軸化</div><span class="ready">数字不要</span></div>
+        <div class="pad">「アニつま」の資産×英語圏オタク顧客。JLPT N1番組と束ね、<b>顧客に直結する集客旗艦</b>に。日本語のB2B番組（ガイド／民泊）とは役割を分ける。</div>
+        <div class="pam"><span class="badge i-hi">インパクト 高</span><span class="badge">労力 中</span></div>
+      </div>
+      <div class="pa">
+        <div class="pah"><div class="pat">② 501話をショート動画で再流通</div><span class="ready">数字不要</span></div>
+        <div class="pad"><b>Headliner連携済み</b>を活かし、過去回の名場面を切り出してYouTube Shorts／TikTok／Reelsへ。眠っているストック資産の再利用でCACゼロの発見導線。</div>
+        <div class="pam"><span class="badge i-hi">インパクト 高</span><span class="badge">労力 中</span></div>
+      </div>
+      <div class="pa">
+        <div class="pah"><div class="pat">③ 全番組にCTA＋UTM／クーポン固定</div><span class="ready">数字不要</span></div>
+        <div class="pad">各回末に「体験レッスン→来日ツアー」への導線を固定挿入。UTMと番組別クーポンで、<b>番組→収益の流入計測がここから始まる</b>。</div>
+        <div class="pam"><span class="badge i-mid">インパクト 中</span><span class="badge">労力 小</span></div>
+      </div>
+      <div class="pa">
+        <div class="pah"><div class="pat">④ 音声広告インバウンドを収益化</div><span class="ready">数字不要</span></div>
+        <div class="pad">既に来ている営業（Audiostart AD／Otonal）を、100回超で安定リスナーの<b>主力2番組で受ける</b>検討。無収益だった番組に初の収益源。</div>
+        <div class="pam"><span class="badge i-mid">インパクト 中</span><span class="badge">労力 小</span></div>
+      </div>
+      <div class="pa">
+        <div class="pah"><div class="pat">⑤ ゲスト／コラボ回でクロス送客</div><span class="ready">数字不要</span></div>
+        <div class="pad">反応の高いコラボ回（#62等）の型を、<b>事業横断</b>に拡張。ツアーガイド候補・生徒・B2B先をゲストに呼び、番組を人脈と供給網のハブにする。</div>
+        <div class="pam"><span class="badge i-mid">インパクト 中</span><span class="badge">労力 中</span></div>
+      </div>
+      <div class="pa">
+        <div class="pah"><div class="pat">⑥ 多番組を「選択と集中」</div><span class="ready">数字が出た</span></div>
+        <div class="pad">2026年の新番組6本は<b>合計1,746再生（アニつまの0.8%）</b>。継続する価値が数字で出ているのは<b>みんらじ・体験ツアーガイドラジオ</b>の2本と、<b>寝ている大物2本の再稼働</b>。他は<b>撮影時間をここへ移す</b>のが最大のレバー。</div>
+        <div class="pam"><span class="badge i-hi">インパクト 高</span><span class="badge">労力 小</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GAP ===== -->
+  <section>
+    <div class="sec-h"><span class="k">06</span><h2>計測の穴 — ここだけワイが取れなかった</h2>
+      <span class="note">ブラウザ接続やプラットフォーム画面が要る＝ご主人様の手が必要</span></div>
+    <div class="gap">
+      <div class="gaprow">
+        <div class="ic">🎫</div>
+        <div class="g-main"><div class="g-t">Airbnb 円建て月次グロス売上</div>
+          <div class="g-s">Gmail入金メールはUSDネットのみ・一部欠落。正確な月次は管理画面のCSVエクスポートが必要。</div></div>
+        <div class="g-need">要CSV書き出し</div>
+      </div>
+      <div class="gaprow">
+        <div class="ic">💴</div>
+        <div class="g-main"><div class="g-t">italki の自分の単価・入金</div>
+          <div class="g-s">プラットフォーム内管理で、明細メールがGmailに1通も無い。teacher wallet の画面かCSVでのみ確認可。</div></div>
+        <div class="g-need">要teacher wallet</div>
+      </div>
+      <div class="gaprow">
+        <div class="ic">🎧</div>
+        <div class="g-main"><div class="g-t">番組の再生数・登録者・リスナー数 <span class="chip good">解消</span></div>
+          <div class="g-s">Spotify分は16本すべて取得済（2026-07-24）。残るはYouTube Studio / Amazon Music 側の実数と、Spotify Audience詳細（国・性別）4本分。</div></div>
+        <div class="g-need">Spotify完了</div>
+      </div>
+      <div class="gaprow">
+        <div class="ic">☕</div>
+        <div class="g-main"><div class="g-t">Canal Palace の売上・予約・利用者数</div>
+          <div class="g-s">個別イベント登録はあるが月次に集計されていない。珈琲¥500/セット等の単価は判明。</div></div>
+        <div class="g-need">要集計</div>
+      </div>
+      <div class="gaprow">
+        <div class="ic">🗓️</div>
+        <div class="g-main"><div class="g-t">Viator / TripAdvisor の売上・催行実数</div>
+          <div class="g-s">レビュー数（20 / 18件）以外の実数は各プラットフォーム管理画面内。売上構成は推定止まり。</div></div>
+        <div class="g-need">要各管理画面</div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-2);margin-top:12px">
+      番組の穴は埋まりました（Spotify 16/16）。残る4つ——Airbnb円建て・italki単価・Canal売上・Viator/TA実数——が入れば、推定ゼロの「本物の対策室」になります 🫡
+    </p>
+  </section>
+
+  <div class="foot">
+    <b>データ範囲と注記：</b> 実数値は 2025-07〜2026-07 に Drive / Gmail / Google Calendar / 各RSS から抽出。ツアー月次はAirbnbチャネルのリマインド・入金メール由来（Viator/TA分は含まず＝過少計上の可能性）。レッスン月次はitalki開始リマインド数（H1公式集計142回とほぼ一致する実測プロキシ）。番組のSpotify実数（16本・全期間再生／フォロワー／直近30日／新規・再訪／最新回、およびアニつまのAudience詳細）は 2026-07-24 に Spotify for Creators から直接読み取った実測値。Airbnb円建てグロス、italki単価、Canal売上は現時点で未計測（上記「計測の穴」）。「推」＝推定値。<br>
+    非収益：せばすちゃん（LINE Bot・内部自動化）、シイレウォッチ（メルカリ監視・売買実績なし）は事業KPIから除外。
+  </div>
+</div>
+
+<div class="tt" id="tt"></div>
+
+<script>
+function tgl(){var r=document.documentElement;var d=(r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))==='dark';r.setAttribute('data-theme',d?'light':'dark');}
+var cs=getComputedStyle(document.documentElement);
+function col(n){return cs.getPropertyValue(n).trim();}
+var TT=document.getElementById('tt');
+function showTT(e,html){TT.innerHTML=html;TT.style.opacity=1;moveTT(e);}
+function moveTT(e){var w=TT.offsetWidth,h=TT.offsetHeight,x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-8)x=e.clientX-w-14; if(y+h>innerHeight-8)y=e.clientY-h-14; TT.style.left=x+'px';TT.style.top=y+'px';}
+function hideTT(){TT.style.opacity=0;}
+var NS='http://www.w3.org/2000/svg';
+function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+/* ---- tour guests ---- */
+var tour=[
+ {m:'7',lab:'2025-07',g:9,s:5,rev:3,pay:'—'},
+ {m:'8',lab:'2025-08',g:4,s:1,rev:3,pay:'—'},
+ {m:'9',lab:'2025-09',g:2,s:1,rev:1,pay:'—'},
+ {m:'10',lab:'2025-10',g:8,s:4,rev:3,pay:'—'},
+ {m:'11',lab:'2025-11',g:15,s:7,rev:7,pay:'$245.55'},
+ {m:'12',lab:'2025-12',g:1,s:1,rev:1,pay:'$184.43'},
+ {m:'1',lab:'2026-01',g:11,s:5,rev:5,pay:'$1,039',b2b:'¥139,000'},
+ {m:'2',lab:'2026-02',g:null,s:null,rev:1,pay:'記録欠落'},
+ {m:'3',lab:'2026-03',g:12,s:5,rev:4,pay:'$1,572'},
+ {m:'4',lab:'2026-04',g:4,s:2,rev:2,pay:'$331',b2b:'¥81,000'},
+ {m:'5',lab:'2026-05',g:0,s:0,rev:5,pay:'—',b2b:'¥111,793'},
+ {m:'6',lab:'2026-06',g:0,s:0,rev:0,pay:'—'},
+ {m:'7 ',lab:'2026-07',g:0,s:0,rev:0,pay:'—'}
+];
+function barChart(id,data,opt){
+  var svg=document.getElementById(id);svg.innerHTML='';
+  var W=560,H=opt.H||220,L=34,R=10,T=14,B=30;var iw=W-L-R,ih=H-T-B;
+  var max=opt.max;var n=data.length;var bw=iw/n;
+  // grid + y labels
+  var ticks=opt.ticks||[0,max/2,max];
+  ticks.forEach(function(tv){var y=T+ih-(tv/max)*ih;
+    svg.appendChild(el('line',{x1:L,y1:y,x2:W-R,y2:y,class:'gl'}));
+    var tx=el('text',{x:L-6,y:y+3,'text-anchor':'end',fill:col('--muted'),'font-size':10.5});tx.textContent=opt.fmtY?opt.fmtY(tv):Math.round(tv);svg.appendChild(tx);});
+  data.forEach(function(d,i){
+    var v=opt.val(d);var cx=L+bw*i+bw/2;
+    var lx=el('text',{x:cx,y:H-10,'text-anchor':'middle',fill:col('--muted'),'font-size':10});lx.textContent=d.m;svg.appendChild(lx);
+    if(v===null){ // unknown
+      var q=el('text',{x:cx,y:T+ih-6,'text-anchor':'middle',fill:col('--muted'),'font-size':13,'font-weight':700});q.textContent='?';svg.appendChild(q);
+      svg.appendChild(el('rect',{x:cx-bw*0.32,y:T+ih-14,width:bw*0.64,height:14,fill:'none',stroke:col('--hair-2'),'stroke-dasharray':'3 3',rx:3}));
+      return;
+    }
+    var bh=(v/max)*ih;var bx=cx-bw*0.32,by=T+ih-bh,bwe=bw*0.64;
+    if(bh<2&&v===0)bh=0;
+    var color=opt.color(d);
+    var r=el('rect',{x:bx,y:by,width:bwe,height:Math.max(bh,v>0?3:0),rx:4,fill:color,class:'bar'});
+    r.addEventListener('mousemove',function(e){showTT(e,opt.tip(d));});
+    r.addEventListener('mouseleave',hideTT);
+    svg.appendChild(r);
+    if(opt.vlab){var vl=el('text',{x:cx,y:by-4,class:'vlab',fill:col('--ink-2')});vl.textContent=opt.vlab(d);svg.appendChild(vl);}
+  });
+}
+barChart('c-tour',tour,{max:16,ticks:[0,8,16],
+  val:function(d){return d.g;},
+  color:function(d){return d.g===0?col('--critical'):col('--tour');},
+  vlab:function(d){return d.g;},
+  tip:function(d){return '<b>'+d.lab+'</b>'+
+    '<div class="r"><span>ゲスト数</span><b>'+(d.g===null?'不明':d.g+'人')+'</b></div>'+
+    '<div class="r"><span>催行数</span><b>'+(d.s===null?'不明':d.s+'回')+'</b></div>'+
+    '<div class="r"><span>Airbnb入金</span><b>'+d.pay+'</b></div>'+
+    (d.b2b?'<div class="r"><span>B2B直販</span><b>'+d.b2b+'</b></div>':'')+
+    '<div class="r"><span>レビュー</span><b>'+d.rev+'件</b></div>';}
+});
+
+/* ---- lesson ---- */
+var lesson=[
+ {m:'7',lab:'2025-07',l:18,nw:'—'},{m:'8',lab:'2025-08',l:16,nw:4},{m:'9',lab:'2025-09',l:29,nw:4},
+ {m:'10',lab:'2025-10',l:28,nw:3},{m:'11',lab:'2025-11',l:24,nw:5},{m:'12',lab:'2025-12',l:24,nw:4},
+ {m:'1',lab:'2026-01',l:27,nw:6},{m:'2',lab:'2026-02',l:29,nw:4},{m:'3',lab:'2026-03',l:26,nw:6},
+ {m:'4',lab:'2026-04',l:20,nw:2},{m:'5',lab:'2026-05',l:24,nw:4},{m:'6',lab:'2026-06',l:17,nw:2},
+ {m:'7 ',lab:'2026-07',l:14,nw:3,partial:true}
+];
+barChart('c-lesson',lesson,{max:30,ticks:[0,15,30],
+  val:function(d){return d.l;},
+  color:function(d){return d.partial?col('--lesson-soft'):col('--lesson');},
+  vlab:function(d){return d.l;},
+  tip:function(d){return '<b>'+d.lab+'</b>'+(d.partial?' <span style="color:var(--muted)">（22日時点）</span>':'')+
+    '<div class="r"><span>レッスン数</span><b>'+d.l+'回</b></div>'+
+    '<div class="r"><span>新規体験申込</span><b>'+d.nw+(d.nw==='—'?'':'件')+'</b></div>';}
+});
+// lesson: overlay new-trial as small number under axis
+(function(){var svg=document.getElementById('c-lesson');var W=560,L=34,R=10,B=30,ih=220-14-30,T=14;var iw=W-L-R;var n=lesson.length;var bw=iw/n;
+ lesson.forEach(function(d,i){var cx=L+bw*i+bw/2;var t=el('text',{x:cx,y:T+ih+13,'text-anchor':'middle',fill:col('--lesson'),'font-size':9,'font-weight':700});t.textContent=(d.nw==='—'?'':'+'+d.nw);svg.appendChild(t);});
+})();
+
+/* ---- programs ---- */
+var progs=[
+ {n:'みんらじ｜民泊ガイドラジオ',e:145,t:'2023-09〜 / 週1 / 民泊ホスト向け / 全期間38,185再生'},
+ {n:'ゼロからの体験ツアーガイドラジオ',e:136,t:'2023-10〜 / 週1 / 訪日ガイド志望向け / 全期間11,165再生'},
+ {n:'アキバなう',e:25,t:'2026〜 / 全期間935再生'},
+ {n:'素人AIラジオ',e:6,t:'2026-06〜 / 週1 / 全期間38再生'},
+ {n:'メンタルよわよわラジオ',e:6,t:'2026-05〜 / 隔週 / 全期間103再生'},
+ {n:'愛の猫パンチ（旧マーケ物申す）',e:1,t:'2026-07 立上げ / 全期間10再生'}
+];
+var other=['アニつま（216.4K・更新停止中）','Nihongo Radio with ANIME SENSEI（126.4K・更新停止中）','イレギュラーコーヒー','厚木トーク','偏愛Channel','オタクのざつだん JLPT N1','ノマドラジオ／多拠点生活な日々／My ADDress Life（休眠）'];
+(function(){
+  var svg=document.getElementById('c-prog');svg.innerHTML='';
+  var W=560,H=236,L=8,R=54,T=6;var rowh=30;var max=140;var iw=W-L-R;
+  progs.forEach(function(p,i){
+    var y=T+i*rowh;var bw=(p.e/max)*iw;
+    var isMain=p.e>100;
+    var r=el('rect',{x:L,y:y+4,width:Math.max(bw,4),height:16,rx:4,fill:col('--program'),class:'bar',opacity:isMain?1:0.62});
+    r.addEventListener('mousemove',function(e){showTT(e,'<b>'+p.n+'</b><div class="r"><span>配信本数</span><b>約'+p.e+'本</b></div><div style="color:var(--muted);font-size:11px;margin-top:3px">'+p.t+'</div><div style="color:var(--warn);font-size:11px;margin-top:3px">再生数・登録者は未計測</div>');});
+    r.addEventListener('mouseleave',hideTT);
+    svg.appendChild(r);
+    var nm=el('text',{x:L+2,y:y+2,fill:col('--ink-2'),'font-size':11,'font-weight':600});nm.textContent=p.n;svg.appendChild(nm);
+    var vl=el('text',{x:L+Math.max(bw,4)+7,y:y+16,fill:col('--ink'),'font-size':11.5,'font-weight':800});vl.textContent='約'+p.e+'本';svg.appendChild(vl);
+  });
+  var yb=T+progs.length*rowh+6;
+  var ot=el('text',{x:L+2,y:yb+6,fill:col('--muted'),'font-size':10.5});ot.textContent='本数未記録（再生数は下表）：'+other.join(' ・ ');
+  // wrap manually
+  svg.appendChild(ot);
+})();
+
+/* ---- channel stacked ---- */
+(function(){
+  var svg=document.getElementById('c-chan');svg.innerHTML='';
+  var W=560,L=6,R=6,y=30,h=34;var iw=W-L-R;
+  var seg=[{n:'Airbnb',v:55,c:col('--tour'),s:'レビュー126件・手数料20%'},{n:'Viator',v:30,c:col('--program'),s:'レビュー20件・売上比突出'},{n:'TripAdvisor',v:15,c:col('--canal'),s:'レビュー18件'}];
+  var x=L;
+  seg.forEach(function(s,i){var w=(s.v/100)*iw;
+    var r=el('rect',{x:x+(i?2:0),y:y,width:w-(i?2:0),height:h,rx:5,fill:s.c,class:'bar'});
+    r.addEventListener('mousemove',function(e){showTT(e,'<b>'+s.n+'</b><div class="r"><span>売上構成（推）</span><b>'+s.v+'%</b></div><div style="color:var(--muted);font-size:11px;margin-top:3px">'+s.s+'</div>');});
+    r.addEventListener('mouseleave',hideTT);svg.appendChild(r);
+    var t=el('text',{x:x+w/2,y:y+h/2+4,'text-anchor':'middle',fill:'#fff','font-size':12.5,'font-weight':800});t.textContent=s.v+'%';svg.appendChild(t);
+    x+=w;});
+})();
+
+/* ---- 5 panel cards ---- */
+var PANEL=[
+ {n:1,role:'データアナリスト',bet:'売上の過半が未計測のまま事業配分を判断している現状をまず解消し、反季節・高利益・リピート実証済みの<b>B2B</b>へ資源を寄せるのが数字上最も合理的。',
+  dx:['ツアーは季節性が明確：11月ピーク（7催行/15人）、5〜7月は催行ゼロ。谷は品質でなく季節要因（評価4.98）。','B2Bは反季節・高利益の成長シグナル。催行ゼロの5月に¥111,793、TCL Japanは単価4倍でリピート化。','レッスンは微減トレンド（29→後半17〜20）＋継続率42%（平均66%）の「量産×低継続」構造。','番組16本の実数が判明：全期間41万再生のうち84%が更新停止中の2本（アニつま216.4K／Nihongo Radio126.4K）。新規リスナーの94%もこの2本から。'],
+  acts:[
+   {t:'4事業の売上を「測れる状態」にする計測基盤',bl:'横断',blc:'accent',i:'高',ef:'中',s:'今週Airbnb CSV＋italki wallet をDLし1枚の月次シートに集約'},
+   {t:'B2Bで夏の谷（催行ゼロ月）を埋める',bl:'ツアー',blc:'tour',i:'高',ef:'中',s:'TCL Japanに来夏の定例枠を打診、同型2社へ卸プラン提案'},
+   {t:'継続率42%→60%台へ（量産から定着へ）',bl:'レッスン',blc:'lesson',i:'高',ef:'小',s:'Meet字幕45件から漢字つまずきを抽出、体験→2回目導線を1本設計'}
+  ]},
+ {n:2,role:'グロース責任者',bet:'レッスンの体験→定着リーク（42%）を塞ぎつつ、来日相談が定番の生徒45人・15か国を<b>CAC実質ゼロ</b>のリードとしてツアー→Canalへ循環させるのが最速。',
+  dx:['最大のリーク＝レッスンのActivation→Retention。年約47体験を量産できるのに定着で漏れる「穴あきバケツ」。','ツアーの個人リピートが実質ゼロ。評価4.98の満足を紹介・再訪に変換する導線が無い。','事業間クロスが未接続。最も来日意向の高い見込み客がレッスン側に滞留＝Referralの金脈が放置。'],
+  acts:[
+   {t:'体験→2回目→定着の3タッチ・フォローアップA/B',bl:'レッスン',blc:'lesson',i:'高',ef:'小',s:'「定着」を定義し直近47体験をタグ付け、現状の転換率を出す'},
+   {t:'レッスン生徒→Akibaツアーのクロス導線を仕組み化',bl:'横断',blc:'accent',i:'高',ef:'小',s:'来日予定の生徒を抽出、コア数名に「生徒限定ツアー優先枠」DM'},
+   {t:'閑散期B2B横展開＋ツアー後の紹介/再訪オファー',bl:'ツアー',blc:'tour',i:'高',ef:'中',s:'TCL成約プロセスを言語化し類似2社へ同型オファー送付'}
+  ]},
+ {n:3,role:'マーケ・ブランド',bet:'「アニメ×来日体験」の英語圏オタク向けに発信・レビュー・オファーを一本化。多番組・多事業へ拡散する前に、<b>ニッチを一本に絞り直す</b>のが最大の一手。',
+  dx:['4.98/164件のレビュー資産がプラットフォーム内に死蔵。自社LP・検索・番組へ転用できていない。','最大の発信資産（週1×2年完走の日本語番組）が、金を払う顧客（英語圏オタク）でなく供給側に向いている。','2026年に多番組化が急加速し、ニッチの絞りが弱まっている。番組→収益の導線も未計測。'],
+  acts:[
+   {t:'4.98レビューをオウンド化しSEO/信頼導線へ',bl:'横断',blc:'accent',i:'高',ef:'中',s:'星5の代表20件をトップページに証言＋Review schemaで掲載'},
+   {t:'英語番組を集客旗艦に、日本語番組はB2B供給へ役割分離',bl:'番組',blc:'program',i:'高',ef:'中',s:'JLPT N1を「来日入口」と再定義、各回末に体験＋ツアーCTA固定'},
+   {t:'番組→収益の導線を計測開始（UTM/クーポン）',bl:'番組',blc:'program',i:'中',ef:'小',s:'全番組説明欄にUTMリンク＋番組別クーポン、再生数を週次記録'}
+  ]},
+ {n:4,role:'ファイナンス',bet:'B2B直販をツアーの主収益エンジンに据え替える。希少資源＝時間を、無収益の多番組化から<b>高ROIのB2B拡販と値上げ</b>へ振り向けるのが最大の利益レバー。',
+  dx:['B2Bが最高ROI：Airbnbはネット約$91まで削られるが、B2Bは1件¥30-60k・手数料ゼロ。5月は催行ゼロでもB2Bで¥111,793。','価格弾力性が低く値上げ余地大：TCL Japanは単価4倍でもリピート。評価4.98で現行価格は明確に安すぎる。','レッスンは時間あたり利益が最低（122時間で月¥50-80k＝時給$14相当）。2026年の新番組6本は合計1,746再生（アニつま1本の0.8%）で収益ゼロ＝時間の最大の漏れ口。'],
+  acts:[
+   {t:'B2B直販を主収益エンジンに（TCLモデル横展開）',bl:'ツアー',blc:'tour',i:'高',ef:'中',s:'¥40-60k/件の卸価格表を作りガイド人脈のB2B候補2社へ送付'},
+   {t:'ツアー全チャネルの値上げ（低弾力性の即効利益）',bl:'横断',blc:'accent',i:'高',ef:'小',s:'直販/B2B下限を+20-30%改定、次の見積から適用し3件で観測'},
+   {t:'時間会計を導入し低ROI活動の投下時間を再配分',bl:'横断',blc:'accent',i:'中',ef:'小',s:'直近4週を5区分で記録、区分ごとの時間あたり利益を算出'}
+  ]},
+ {n:5,role:'クリエイティブ・プロダクト',bet:'定番化した「来日相談」を有料の<b>来日ブリッジ商品</b>として正式化し、生徒の温かい核をツアー→Canalへ流す1本のパッケージに。季節谷はバーチャル版とB2Bで埋める。',
+  dx:['最大の未回収資産は「レッスン⇄ツアー」の接続部。生態系の設計図はあるのに橋が架かっていない。','夏の在庫が完全に死蔵（5〜7月催行ゼロ）。季節性を吸収する在庫化商品が欠落。','コンテンツ資産（263話＋字幕45ノート）が商品化されず眠っている。1on1量産は一人運営では限界。'],
+  acts:[
+   {t:'「来日パスポート」＝生徒→ツアー転換ブリッジ商品',bl:'横断',blc:'accent',i:'高',ef:'中',s:'リピーター核6名に来日予定をヒアリング、ツアー＋Canal特典の1枚案内'},
+   {t:'オンライン・バーチャルアキバツアー（閑散期の在庫化）',bl:'ツアー',blc:'tour',i:'中',ef:'中',s:'既存動線を60分Zoom版に、Acuityで¥3,000テスト回を1本'},
+   {t:'漢字つまずき教材のセルフサーブ商品化',bl:'レッスン',blc:'lesson',i:'中',ef:'中',s:'45ノートから頻出10テーマ抽出、1つを番組で無料配布し反応計測'}
+  ]}
+];
+(function(){
+ var wrap=document.getElementById('panels');
+ var blname={tour:'ツアー',lesson:'レッスン',program:'番組',accent:'横断'};
+ PANEL.forEach(function(p){
+  var h='<div class="panel"><div class="top"><div class="role"><span class="n"></span><h3>'+p.role+'</h3></div>'+
+    '<div class="bet">'+p.bet+'</div></div><div class="body">'+
+    '<div class="dx">診断</div><ul>'+p.dx.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
+    '<div class="dx">施策</div><div class="acts">';
+  p.acts.forEach(function(a){
+   var blc=a.blc==='accent'?'var(--accent)':'var(--'+a.blc+')';
+   var blbg=a.blc==='accent'?'var(--accent-soft)':'var(--'+a.blc+'-soft)';
+   h+='<div class="act"><div class="ah"><div class="at">'+a.t+'</div>'+
+     '<span class="bl" style="color:'+blc+';background:'+blbg+'">'+blname[a.blc]+'</span></div>'+
+     '<div class="meta"><span class="badge '+(a.i==='高'?'i-hi':'i-mid')+'">インパクト '+a.i+'</span>'+
+     '<span class="badge">労力 '+a.ef+'</span></div>'+
+     '<div class="step"><b>今週：</b>'+a.s+'</div></div>';
+  });
+  h+='</div></div></div>';
+  wrap.insertAdjacentHTML('beforeend',h);
+ });
+})();
+</script>
