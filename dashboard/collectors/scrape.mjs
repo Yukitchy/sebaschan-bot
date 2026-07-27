@@ -27,6 +27,9 @@ if (fs.existsSync(at('.env'))) {
 const SHEET_ENDPOINT = env.SHEET_ENDPOINT || process.env.SHEET_ENDPOINT || '';
 const SHEET_SECRET = env.SHEET_SECRET || process.env.SHEET_SECRET || '';
 
+// 起動時に設定状態を1行で見せる。数字がシートに入らない事故の大半はここ（未設定/既定値のまま）。
+console.log(`⚙️ 設定確認: .env=${fs.existsSync(at('.env')) ? '有' : '無'} / SHEET_ENDPOINT=${SHEET_ENDPOINT ? '設定済み' : '⚠️未設定→CSVに逃げます'} / SHEET_SECRET=${SHEET_SECRET ? (SHEET_SECRET === 'CHANGE_ME_共有シークレット' ? '⚠️既定値のまま(GASと不一致になる)' : '設定済み') : '⚠️未設定'}`);
+
 const today = new Date().toISOString().slice(0, 10);
 const { shows } = JSON.parse(fs.readFileSync(at('shows.json'), 'utf8'));
 fs.mkdirSync(at('debug'), { recursive: true });
@@ -146,7 +149,18 @@ if (SHEET_ENDPOINT) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret: SHEET_SECRET, sheet: '番組データ', rows }),
     });
-    console.log('Sheet POST:', res.status, await res.text());
+    const bodyText = await res.text();
+    console.log('Sheet POST:', res.status, bodyText);
+    // GASの応答を判定して、成功/失敗の理由を明示する（サイレント失敗を潰す）。
+    if (/bad secret/i.test(bodyText)) {
+      console.error('⚠️ GASが「bad secret」を返しました＝.env の SHEET_SECRET と GAS側 SECRET が不一致。数字はシートに入っていません。');
+    } else if (/"ok"\s*:\s*true/.test(bodyText)) {
+      const mu = bodyText.match(/"updated"\s*:\s*(\d+)/);
+      const ma = bodyText.match(/"added"\s*:\s*(\d+)/);
+      console.log(`✅ シート反映OK: 更新${mu ? mu[1] : '?'}行 / 追加${ma ? ma[1] : '?'}行`);
+    } else {
+      console.error('⚠️ GAS応答が想定外。上のレスポンス本文を確認してください。');
+    }
   } catch (e) {
     console.error('Sheet POST失敗（CSVに保存済み）:', e.message);
   }
