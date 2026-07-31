@@ -79,8 +79,9 @@ function parseShow(text) {
 }
 
 // 1番組を取得。成功={d,text}／ログイン切れ={loginWall:true}／失敗={failed:true}
+// 失敗系でも text/url を返し、呼び出し側で原因（未ログイン/DOM変化）を切り分けられるようにする。
 async function fetchShow(page, s) {
-  let lastErr = '';
+  let lastErr = '', lastText = '', lastUrl = '', lastTitle = '';
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       // networkidle はSpotifyのSPA（常時ポーリング）で永久に発火せずタイムアウトするため domcontentloaded + 固定待ちに。
@@ -89,18 +90,24 @@ async function fetchShow(page, s) {
       await page.waitForFunction(() => /all-time plays/i.test(document.body.innerText), { timeout: 15000 }).catch(() => {});
       await page.waitForTimeout(2000);
       const text = await page.evaluate(() => document.body.innerText);
+      const url = page.url();
+      const title = await page.title().catch(() => '');
+      lastText = text; lastUrl = url; lastTitle = title;
       const hasData = /all-time plays/i.test(text);
-      const loginWall = !hasData && /log in to spotify|ログイン|continue with/i.test(text);
-      if (loginWall) return { loginWall: true };
+      // ログイン画面/リダイレクトの検知を広めに（英語・日本語・アカウントドメインへの飛ばされ）。
+      const looksLogin = /log ?in to spotify|log ?in|sign ?up|continue with|create account|パスワード|ログイン/i.test(text)
+        || /accounts\.spotify\.com|\/login/i.test(url);
+      if (!hasData && looksLogin) return { loginWall: true, url, title, text };
       const d = parseShow(text);
       if (d.allTime != null) return { d, text };
-      lastErr = 'all-time plays 見つからず';
+      // 失敗理由を画面に出せるよう、実際に見えていたURL/タイトル/本文先頭を残す。
+      lastErr = `all-time plays無し url=${url} title="${title}" 本文先頭=[${text.slice(0, 100).replace(/\s+/g, ' ').trim()}]`;
     } catch (e) {
       lastErr = e.message;
     }
     await page.waitForTimeout(1500); // リトライ前に小休止
   }
-  return { failed: true, err: lastErr };
+  return { failed: true, err: lastErr, text: lastText, url: lastUrl, title: lastTitle };
 }
 
 const rows = [];
@@ -108,18 +115,27 @@ let ok = 0, skipped = 0, authFail = 0;
 // launchPersistentContext は storageState を受け付けない（無視されて未ログインになる）。
 // 通常の launch + newContext で保存済みCookieを読ませる。
 const browserApp = await chromium.launch({ headless: true });
-const browser = await browserApp.newContext({ storageState: at('storageState.json') });
+// headless-shell はUAで弾かれる/別ページを返されることがあるため、通常Chromeを名乗る。
+const browser = await browserApp.newContext({
+  storageState: at('storageState.json'),
+  userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  locale: 'en-US',
+  viewport: { width: 1440, height: 900 },
+});
 const page = await browser.newPage();
 
 for (const s of shows.filter((x) => x.showId)) {
   const res = await fetchShow(page, s);
   if (res.loginWall) {
     authFail++;
-    console.error(`✗ ${s.name}: 未ログイン（ログイン切れ）`);
+    try { fs.writeFileSync(at('debug', `FAIL_${s.name}.txt`), `url=${res.url}\ntitle=${res.title}\n\n${res.text || ''}`); } catch {}
+    console.error(`✗ ${s.name}: 未ログイン（url=${res.url || ''}）`);
     continue;
   }
   if (res.failed || !res.d) {
     skipped++;
+    // 失敗ページの生テキストを debug/FAIL_*.txt に残す（原因調査用）。
+    try { if (res.text) fs.writeFileSync(at('debug', `FAIL_${s.name}.txt`), `url=${res.url}\ntitle=${res.title}\n\n${res.text}`); } catch {}
     console.error(`✗ ${s.name}: 取得失敗のためスキップ（既存値を保持）: ${res.err || ''}`);
     continue;
   }
