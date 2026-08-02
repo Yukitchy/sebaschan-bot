@@ -226,6 +226,14 @@
   .panel .role .n{background:var(--ink)}
   a{color:var(--accent);text-underline-offset:2px}
   .gl{stroke:var(--hair)}
+  /* 施策カードの「Claudeで始める」＝プロンプトをコピーするCTA */
+  .startbtn{margin-top:10px;width:100%;border:1px solid var(--ink);background:var(--ink);color:var(--surface);
+    font-family:inherit;font-weight:700;font-size:11.5px;letter-spacing:.02em;padding:9px 10px;border-radius:2px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;transition:opacity .12s,background .12s}
+  .startbtn:hover{opacity:.86}
+  .startbtn:active{transform:translateY(1px)}
+  .startbtn.copied{background:var(--good);border-color:var(--good);color:#fff}
+  .startbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -836,6 +844,17 @@ var PANEL=[
 (function(){
  var wrap=document.getElementById('panels');
  var blname={tour:'ツアー',lesson:'レッスン',program:'番組',accent:'横断'};
+ var PROMPTS=[];
+ var BTN='▶&nbsp;Claudeで始める（プロンプトをコピー）';
+ // 施策カードごとに、着手用プロンプトを生成しておく（ボタンはindexで参照）。
+ function buildPrompt(p,a){
+  return '【対策室タスク着手】次の施策を始めます。手順・必要データ・今日の最初の一歩を具体化してください。\n\n'+
+    '■ 施策: '+a.t+'\n'+
+    '■ 領域: '+blname[a.blc]+' ／ インパクト'+a.i+' ／ 労力'+a.ef+'\n'+
+    '■ 今週やること: '+a.s+'\n'+
+    '■ 出所: 対策室「'+p.role+'」の診断\n\n'+
+    'この施策を進めるために、(1) 具体ステップ (2) 必要な数字・資料 (3) 今日できる最初の1アクション を提案してください。数値は対策室ダッシュボードの実データ準拠でお願いします。';
+ }
  PANEL.forEach(function(p){
   var h='<div class="panel"><div class="top"><div class="role"><span class="n"></span><h3>'+p.role+'</h3></div>'+
     '<div class="bet">'+p.bet+'</div></div><div class="body">'+
@@ -844,14 +863,29 @@ var PANEL=[
   p.acts.forEach(function(a){
    var blc=a.blc==='accent'?'var(--accent)':'var(--'+a.blc+')';
    var blbg=a.blc==='accent'?'var(--accent-soft)':'var(--'+a.blc+'-soft)';
+   var pi=PROMPTS.length; PROMPTS.push(buildPrompt(p,a));
    h+='<div class="act"><div class="ah"><div class="at">'+a.t+'</div>'+
      '<span class="bl" style="color:'+blc+';background:'+blbg+'">'+blname[a.blc]+'</span></div>'+
      '<div class="meta"><span class="badge '+(a.i==='高'?'i-hi':'i-mid')+'">インパクト '+a.i+'</span>'+
      '<span class="badge">労力 '+a.ef+'</span></div>'+
-     '<div class="step"><b>今週：</b>'+a.s+'</div></div>';
+     '<div class="step"><b>今週：</b>'+a.s+'</div>'+
+     '<button class="startbtn" type="button" data-p="'+pi+'">'+BTN+'</button></div>';
   });
   h+='</div></div></div>';
   wrap.insertAdjacentHTML('beforeend',h);
+ });
+ // クリップボードにコピー（iframe内でも動くよう execCommand フォールバック付き）。
+ function fallbackCopy(txt){var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
+   ta.style.position='fixed';ta.style.top='-1000px';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+   var ok=false;try{ok=document.execCommand('copy');}catch(e){}document.body.removeChild(ta);return ok;}
+ wrap.addEventListener('click',function(e){
+  var b=e.target.closest('.startbtn'); if(!b)return;
+  var txt=PROMPTS[+b.getAttribute('data-p')]||'';
+  function done(){b.textContent='✓ コピーしました！Claudeに貼り付けてください';b.classList.add('copied');
+    setTimeout(function(){b.innerHTML=BTN;b.classList.remove('copied');},2400);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done,function(){fallbackCopy(txt);done();});
+  }else{fallbackCopy(txt);done();}
  });
 })();
 </script>
