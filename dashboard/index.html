@@ -2,35 +2,35 @@
 <style>
   :root{
     color-scheme: light;
-    --plane:#f6f5f2; --surface:#fdfcfb; --surface-2:#f0eee8; --raise:#ffffff;
-    --ink:#17150e; --ink-2:#55524a; --muted:#8c8981; --hair:#e5e2d9; --hair-2:#d8d4c8;
-    --accent:#4a3aa7; --accent-2:#6a5bd0; --accent-soft:#ece9f8;
-    --tour:#2a78d6; --lesson:#eb6834; --program:#1baf7a; --canal:#eda100;
-    --tour-soft:#e2edfb; --lesson-soft:#fbe6dc; --program-soft:#dcf1ea; --canal-soft:#f8ecc9;
-    --good:#0ca30c; --warn:#c98500; --serious:#d0632f; --critical:#d03b3b;
-    --good-ink:#0a7d18; --shadow:0 1px 2px rgba(20,18,10,.05),0 2px 10px rgba(20,18,10,.05);
+    --plane:#ffffff; --surface:#ffffff; --surface-2:#f3f3f0; --raise:#ffffff;
+    --ink:#0d0d0b; --ink-2:#3c3b36; --muted:#78776f; --hair:#e3e2dc; --hair-2:#cdccc4;
+    --accent:#e1231a; --accent-2:#b51c15; --accent-soft:#fbeae8;
+    --tour:#2f6cad; --lesson:#c8592c; --program:#2a8a63; --canal:#a8871d;
+    --tour-soft:#e8eef6; --lesson-soft:#f7ebe3; --program-soft:#e3f0ea; --canal-soft:#f4eeda;
+    --good:#1a7a3b; --warn:#a9711d; --serious:#c8592c; --critical:#e1231a;
+    --good-ink:#136030; --shadow:none;
   }
   @media (prefers-color-scheme: dark){
     :root:where(:not([data-theme="light"])){
       color-scheme: dark;
-      --plane:#0c0c0b; --surface:#18181a; --surface-2:#201f22; --raise:#1f1f21;
-      --ink:#f4f2ea; --ink-2:#c3c2b7; --muted:#8f8d84; --hair:#2b2b2a; --hair-2:#39383a;
-      --accent:#9085e9; --accent-2:#a99fef; --accent-soft:#211d33;
-      --tour:#3987e5; --lesson:#e0632f; --program:#22b585; --canal:#e0a013;
-      --tour-soft:#16273d; --lesson-soft:#3a2118; --program-soft:#123028; --canal-soft:#33280d;
-      --good:#22b12a; --warn:#e0a013; --serious:#e0783f; --critical:#e05656;
-      --good-ink:#3ac74a; --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.35);
+      --plane:#0b0b0c; --surface:#141416; --surface-2:#1c1c1f; --raise:#161618;
+      --ink:#f2f1ec; --ink-2:#c3c2ba; --muted:#8b8a82; --hair:#282829; --hair-2:#3a3a3c;
+      --accent:#ff473c; --accent-2:#ff6a60; --accent-soft:#2c1512;
+      --tour:#4f92dd; --lesson:#e67a45; --program:#33b083; --canal:#cf9f39;
+      --tour-soft:#152436; --lesson-soft:#33200f; --program-soft:#0f2c22; --canal-soft:#2e2410;
+      --good:#2eb356; --warn:#d69a34; --serious:#e67a45; --critical:#ff5b50;
+      --good-ink:#3ac74a; --shadow:none;
     }
   }
   :root[data-theme="dark"]{
     color-scheme: dark;
-    --plane:#0c0c0b; --surface:#18181a; --surface-2:#201f22; --raise:#1f1f21;
-    --ink:#f4f2ea; --ink-2:#c3c2b7; --muted:#8f8d84; --hair:#2b2b2a; --hair-2:#39383a;
-    --accent:#9085e9; --accent-2:#a99fef; --accent-soft:#211d33;
-    --tour:#3987e5; --lesson:#e0632f; --program:#22b585; --canal:#e0a013;
-    --tour-soft:#16273d; --lesson-soft:#3a2118; --program-soft:#123028; --canal-soft:#33280d;
-    --good:#22b12a; --warn:#e0a013; --serious:#e0783f; --critical:#e05656;
-    --good-ink:#3ac74a; --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 12px rgba(0,0,0,.35);
+    --plane:#0b0b0c; --surface:#141416; --surface-2:#1c1c1f; --raise:#161618;
+    --ink:#f2f1ec; --ink-2:#c3c2ba; --muted:#8b8a82; --hair:#282829; --hair-2:#3a3a3c;
+    --accent:#ff473c; --accent-2:#ff6a60; --accent-soft:#2c1512;
+    --tour:#4f92dd; --lesson:#e67a45; --program:#33b083; --canal:#cf9f39;
+    --tour-soft:#152436; --lesson-soft:#33200f; --program-soft:#0f2c22; --canal-soft:#2e2410;
+    --good:#2eb356; --warn:#d69a34; --serious:#e67a45; --critical:#ff5b50;
+    --good-ink:#3ac74a; --shadow:none;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--plane);color:var(--ink);
@@ -205,6 +205,27 @@
   .pa .need{font-size:10.5px;font-weight:700;color:var(--serious);border:1px solid color-mix(in srgb,var(--serious) 40%,transparent);padding:1px 7px;border-radius:999px;white-space:nowrap}
   .pa .ready{font-size:10.5px;font-weight:700;color:var(--good-ink);border:1px solid color-mix(in srgb,var(--good) 40%,transparent);padding:1px 7px;border-radius:999px;white-space:nowrap}
   @media(max-width:820px){.pod-top{grid-template-columns:1fr}.pod-acts,.ph-row{grid-template-columns:1fr}}
+
+  /* ============ スイス / 情報設計 リスキン（option 5）============
+     ヘルベチカ・白地・細罫・赤の差し色を最小限・角丸ほぼ廃止・影とグラデ廃止。 */
+  body{font-family:"Helvetica Neue",Helvetica,Arial,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;line-height:1.55;letter-spacing:-.003em}
+  .hero,.tile,.card,.panel,.conv,.move,.road,.gap,.ptable-wrap,.pa,.act,.ph,.tt,.themebtn,.intake{box-shadow:none!important;border-radius:2px!important}
+  .chip,.badge,.tag,.bl,.g-need,.pa .need,.pa .ready,.panel .role .n{border-radius:2px!important}
+  .dot,.bl-dot{border-radius:0!important}
+  .hero{background:var(--surface)!important;border-top:3px solid var(--accent)}
+  .conv{background:var(--surface)!important}
+  .panel .top{background:var(--surface-2)!important}
+  .eyebrow{color:var(--accent);letter-spacing:.2em}
+  .hero h1{font-weight:800;letter-spacing:-.022em}
+  .sec-h{border-bottom:1px solid var(--hair);padding-bottom:9px}
+  .sec-h .k{color:var(--accent);font-weight:800;letter-spacing:.1em}
+  .sec-h h2{font-weight:800;letter-spacing:-.02em}
+  .tile .v{letter-spacing:-.03em}
+  .badge.i-hi{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+  .badge.i-mid{background:none;color:var(--ink-2);border:1px solid var(--hair-2)}
+  .panel .role .n{background:var(--ink)}
+  a{color:var(--accent);text-underline-offset:2px}
+  .gl{stroke:var(--hair)}
 </style>
 
 <div class="wrap">
@@ -673,13 +694,13 @@ function barChart(id,data,opt){
     var lx=el('text',{x:cx,y:H-10,'text-anchor':'middle',fill:col('--muted'),'font-size':10});lx.textContent=d.m;svg.appendChild(lx);
     if(v===null){ // unknown
       var q=el('text',{x:cx,y:T+ih-6,'text-anchor':'middle',fill:col('--muted'),'font-size':13,'font-weight':700});q.textContent='?';svg.appendChild(q);
-      svg.appendChild(el('rect',{x:cx-bw*0.32,y:T+ih-14,width:bw*0.64,height:14,fill:'none',stroke:col('--hair-2'),'stroke-dasharray':'3 3',rx:3}));
+      svg.appendChild(el('rect',{x:cx-bw*0.32,y:T+ih-14,width:bw*0.64,height:14,fill:'none',stroke:col('--hair-2'),'stroke-dasharray':'3 3',rx:0}));
       return;
     }
     var bh=(v/max)*ih;var bx=cx-bw*0.32,by=T+ih-bh,bwe=bw*0.64;
     if(bh<2&&v===0)bh=0;
     var color=opt.color(d);
-    var r=el('rect',{x:bx,y:by,width:bwe,height:Math.max(bh,v>0?3:0),rx:4,fill:color,class:'bar'});
+    var r=el('rect',{x:bx,y:by,width:bwe,height:Math.max(bh,v>0?3:0),rx:0,fill:color,class:'bar'});
     r.addEventListener('mousemove',function(e){showTT(e,opt.tip(d));});
     r.addEventListener('mouseleave',hideTT);
     svg.appendChild(r);
@@ -735,7 +756,7 @@ var other=['アニつま（216.4K・更新停止中）','Nihongo Radio with ANIM
   progs.forEach(function(p,i){
     var y=T+i*rowh;var bw=(p.e/max)*iw;
     var isMain=p.e>100;
-    var r=el('rect',{x:L,y:y+4,width:Math.max(bw,4),height:16,rx:4,fill:col('--program'),class:'bar',opacity:isMain?1:0.62});
+    var r=el('rect',{x:L,y:y+4,width:Math.max(bw,4),height:16,rx:0,fill:col('--program'),class:'bar',opacity:isMain?1:0.62});
     r.addEventListener('mousemove',function(e){showTT(e,'<b>'+p.n+'</b><div class="r"><span>配信本数</span><b>約'+p.e+'本</b></div><div style="color:var(--muted);font-size:11px;margin-top:3px">'+p.t+'</div><div style="color:var(--warn);font-size:11px;margin-top:3px">再生数・登録者は未計測</div>');});
     r.addEventListener('mouseleave',hideTT);
     svg.appendChild(r);
@@ -748,18 +769,30 @@ var other=['アニつま（216.4K・更新停止中）','Nihongo Radio with ANIM
   svg.appendChild(ot);
 })();
 
-/* ---- channel stacked ---- */
+/* ---- channel donut（円グラフ） ---- */
 (function(){
   var svg=document.getElementById('c-chan');svg.innerHTML='';
-  var W=560,L=6,R=6,y=30,h=34;var iw=W-L-R;
-  var seg=[{n:'Airbnb',v:55,c:col('--tour'),s:'レビュー126件・手数料20%'},{n:'Viator',v:30,c:col('--program'),s:'レビュー20件・売上比突出'},{n:'TripAdvisor',v:15,c:col('--canal'),s:'レビュー18件'}];
-  var x=L;
-  seg.forEach(function(s,i){var w=(s.v/100)*iw;
-    var r=el('rect',{x:x+(i?2:0),y:y,width:w-(i?2:0),height:h,rx:5,fill:s.c,class:'bar'});
-    r.addEventListener('mousemove',function(e){showTT(e,'<b>'+s.n+'</b><div class="r"><span>売上構成（推）</span><b>'+s.v+'%</b></div><div style="color:var(--muted);font-size:11px;margin-top:3px">'+s.s+'</div>');});
-    r.addEventListener('mouseleave',hideTT);svg.appendChild(r);
-    var t=el('text',{x:x+w/2,y:y+h/2+4,'text-anchor':'middle',fill:'#fff','font-size':12.5,'font-weight':800});t.textContent=s.v+'%';svg.appendChild(t);
-    x+=w;});
+  svg.setAttribute('viewBox','0 0 560 200');
+  var seg=[{n:'Airbnb',v:55,c:col('--tour'),s:'レビュー126件・手数料20%'},
+           {n:'Viator',v:30,c:col('--program'),s:'レビュー20件・売上比突出'},
+           {n:'TripAdvisor',v:15,c:col('--canal'),s:'レビュー18件'}];
+  var cx=280,cy=100,R=82,r=50;
+  function pt(rad,ang){return [cx+rad*Math.cos(ang),cy+rad*Math.sin(ang)];}
+  var a0=-Math.PI/2;
+  seg.forEach(function(s){
+    var frac=s.v/100,a1=a0+frac*2*Math.PI,large=frac>0.5?1:0;
+    var p0=pt(R,a0),p1=pt(R,a1),p2=pt(r,a1),p3=pt(r,a0);
+    var d='M'+p0[0]+' '+p0[1]+' A'+R+' '+R+' 0 '+large+' 1 '+p1[0]+' '+p1[1]+
+          ' L'+p2[0]+' '+p2[1]+' A'+r+' '+r+' 0 '+large+' 0 '+p3[0]+' '+p3[1]+' Z';
+    var path=el('path',{d:d,fill:s.c,class:'bar'});
+    path.addEventListener('mousemove',function(e){showTT(e,'<b>'+s.n+'</b><div class="r"><span>売上構成（推）</span><b>'+s.v+'%</b></div><div style="color:var(--muted);font-size:11px;margin-top:3px">'+s.s+'</div>');});
+    path.addEventListener('mouseleave',hideTT);svg.appendChild(path);
+    var mid=a0+frac*Math.PI,lp=pt((R+r)/2,mid);
+    var t=el('text',{x:lp[0],y:lp[1]+4,'text-anchor':'middle',fill:'#fff','font-size':13.5,'font-weight':800});t.textContent=s.v+'%';svg.appendChild(t);
+    a0=a1;
+  });
+  var c1=el('text',{x:cx,y:cy-3,'text-anchor':'middle',fill:col('--ink'),'font-size':12.5,'font-weight':800});c1.textContent='チャネル';svg.appendChild(c1);
+  var c2=el('text',{x:cx,y:cy+13,'text-anchor':'middle',fill:col('--muted'),'font-size':10.5});c2.textContent='構成（推）';svg.appendChild(c2);
 })();
 
 /* ---- 5 panel cards ---- */
