@@ -66,8 +66,14 @@ def get_gemini_response(user_id: str, user_message: str) -> str:
         system_instruction=SEBASCHAN_SYSTEM_PROMPT,
     )
     chat = model.start_chat(history=conversation_history[user_id][:-1])
-    response = chat.send_message(user_message)
-    assistant_message = response.text
+    try:
+        response = chat.send_message(user_message)
+        assistant_message = response.text
+    except Exception as e:
+        # Gemini側の一時エラーやセーフティブロックでクラッシュさせず、執事口調のフォールバックで返す。
+        # ユーザーのターンはhistoryに残したまま、応答ターンは追加しない（会話の整合を保つ）。
+        print(f"[sebaschan] Gemini呼び出し失敗: {e}")
+        return "申し訳ございません、ご主人様。少々頭が回らなかったようです。もう一度お聞かせいただけますか？"
 
     conversation_history[user_id].append({
         "role": "model",

@@ -804,7 +804,7 @@ var PANEL=[
  var wrap=document.getElementById('panels');
  var blname={tour:'ツアー',lesson:'レッスン',program:'番組',accent:'横断'};
  PANEL.forEach(function(p){
-  var h='<div class="panel"><div class="top"><div class="role"><span class="n"></span><h3>'+p.role+'</h3></div>'+
+  var h='<div class="panel"><div class="top"><div class="role"><span class="n">'+p.n+'</span><h3>'+p.role+'</h3></div>'+
     '<div class="bet">'+p.bet+'</div></div><div class="body">'+
     '<div class="dx">診断</div><ul>'+p.dx.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
     '<div class="dx">施策</div><div class="acts">';

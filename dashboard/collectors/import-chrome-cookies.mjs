@@ -67,7 +67,9 @@ for (const line of dump.split('\n')) {
   });
 }
 
-fs.writeFileSync('storageState.json', JSON.stringify({ cookies, origins: [] }, null, 2));
+// scrape.mjs / save-auth.mjs は import.meta.dirname 基準で読む（cwd依存は過去に空振り事故あり）。
+// ここも揃える。
+fs.writeFileSync(path.join(import.meta.dirname, 'storageState.json'), JSON.stringify({ cookies, origins: [] }, null, 2));
 const byHost = {};
 for (const c of cookies) byHost[c.domain] = (byHost[c.domain] || 0) + 1;
 console.log('取り出したCookie:', cookies.length);
